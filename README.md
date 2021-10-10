@@ -2,7 +2,7 @@
 
 ## 实现思路
 
-#### 数据处理
+### 数据处理
 
 步骤如下：
 
@@ -46,7 +46,7 @@
 
 ref: [学长实验报告](https://github.com/hardyho/WebInfo-Lab/blob/main/lab1/%E5%AE%9E%E9%AA%8C%E6%8A%A5%E5%91%8A.md) [Build your semantic document search engine with TF-IDF and Google-USE](https://medium.com/analytics-vidhya/build-your-semantic-document-search-engine-with-tf-idf-and-google-use-c836bf5f27fb)
 
-#### bool search
+### bool search
 
 - 可以进行 AND/OR 计算先后次序的优化，类似于矩阵连乘优化算法
 
