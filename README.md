@@ -57,3 +57,36 @@ ref: [学长实验报告](https://github.com/hardyho/WebInfo-Lab/blob/main/lab1/
 - 检索时计算查询词向量与 tf-idf 夹角 cos 值来判断相关性
 
 - 如果做了 word2vec，在计算夹角时可以考虑纳入 k 个相关词，然后取与文档最近+权重（近义词相关系数乘以 tf-idf 取最大者）最大的加入计算
+
+## 代码框架
+
+仓库结构
+
+~~~~bash
+.
+├── bool_search.py
+├── process.py
+├── README.md
+├── requirements.txt
+├── semantic_search.py
+└── utils
+    ├── config.py
+    ├── data_process.py
+    ├── __init__.py
+    ├── inverted_index.py
+    └── tf_idf.py
+~~~~
+
+`bool_search.py` `semantic_search.py` 是主搜索程序，完成搜索功能
+
+`process.py` 负责一键解析数据集，输出倒排表和 tf-idf 表
+
+`utils` 里为上述程序的后端
+
+`utils/config.py` 负责本次实验的一些配置存储/读取，例如数据集和倒排表位置等
+
+`utils/data_process.py` 负责数据处理，包括处理原文件、解析词根、输出词表等
+
+`utils/tf_idf` 作为 tf-idf 和 semantic search 相关后端
+
+`utils/inverted_index.py` 作为倒排表和 bool search 相关后端
