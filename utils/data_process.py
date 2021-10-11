@@ -8,13 +8,14 @@ class Data(object):
         self.maxfile = maxfile
         self.data = {}
         self.metadata = {}
+        self.stopword = {}
         self.debug = debug
         self.lemma_engine = lemma_engine
         print(f"DEBUG: maxfile is set to {self.maxfile}")
 
     def _dump_(self):
         file_id = 0
-        print('DEBUG: Loading all files, this may take a long time...')
+        if self.debug: print('DEBUG: Loading all files, this may take a long time...')
         for (root, dirs, files) in walk(self.path):
             for file in files:
                 with open(f'{root}/{file}', 'r') as f:
@@ -35,6 +36,7 @@ class Data(object):
         if self.debug: print(f'DEBUG: All {file_id} file loaded')
 
     def _pre_process_(self):
+        if self.debug: print('DEBUG: Pre-processing files')
         for file_id in self.data:
             self.data[file_id] = self.data[file_id].lower()
             # match most of valid email addresses
@@ -43,12 +45,12 @@ class Data(object):
             self.data[file_id] =sub('((http|https)\:\/\/)?[a-z0-9\.\/\?\:@\-_=#]+\.([a-z]){2,6}([a-z0-9\.\&\/\?\:@\-_=#])*','',self.data[file_id])
             # match punctuation
             self.data[file_id] =sub(r'[^\w\s]','',self.data[file_id])
-            self.data[file_id] =sub(' {2,}', ' ',self.data[file_id])
+            self.data[file_id] =sub(' {2,}|\\n', ' ',self.data[file_id])
             self.data[file_id] = self.data[file_id].strip()
 
     def _spacy_lemma_(self):
+        #deprecated due to low efficiency, stop words not implemented
         import spacy
-        # amazingly slow
         for file_id in self.data:
             nlp = spacy.load('en_core_web_sm', disable=['parser', 'ner'])
             self.data[file_id] = [token.lemma_ for token in nlp(self.data[file_id])]
@@ -60,24 +62,28 @@ class Data(object):
         import nltk
         from nltk.stem import WordNetLemmatizer 
         from nltk.corpus import wordnet
+        #this method owe to https://www.machinelearningplus.com/nlp/lemmatization-examples-python/
         def get_wordnet_pos(word):
             tag = nltk.pos_tag([word])[0][1][0].upper()
             tag_dict = {"J": wordnet.ADJ,
                         "N": wordnet.NOUN,
                         "V": wordnet.VERB,
                         "R": wordnet.ADV}
-
             return tag_dict.get(tag, wordnet.NOUN)
         for file_id in self.data:
             lemmatizer = WordNetLemmatizer()
-            self.data[file_id] = [lemmatizer.lemmatize(w, get_wordnet_pos(w))
-                for w in self.data[file_id].split(' ')]
+            wordlist = []
+            for word in self.data[file_id].split(' '):
+                if word not in self.stopword:
+                    wordlist.append(word)
+            self.data[file_id] = [lemmatizer.lemmatize(word, get_wordnet_pos(word))
+                for word in wordlist]
             if self.debug and file_id % 100 == 0:
                 print(f'DEBUG: {file_id} file lemmatized')
         if self.debug: print(f'DEBUG: All {file_id} file lemmatized')
     
     def _lemma_(self):
-        print('DEBUG: Lemmatizing all files, this may take a longer time...')
+        if self.debug: print('DEBUG: Lemmatizing all files, this may take a longer time...')
         if self.lemma_engine == "nltk":
             if self.debug:
                 print("DEBUG: Lemmatization engine: NLTK")
@@ -87,7 +93,13 @@ class Data(object):
                 print("DEBUG: Lemmatization engine: SpaCy")
             self._spacy_lemma_()
 
+    def _stop_word_init_(self,path="./utils/config/stopwords.txt"):
+        with open(path,"r") as f:
+            self.stopword = set(f.read().split(' '))
+            if self.debug: print(f"DEBUG: Read {len(self.stopword)} stopwords from {path}")
+        
     def load(self):
+        self._stop_word_init_()
         self._dump_()
         self._pre_process_()
         self._lemma_()
