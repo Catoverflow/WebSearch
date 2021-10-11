@@ -1,2 +1,3 @@
 from utils.data_process import Data
-data = Data().load()
+data = Data(maxfile=1000)
+data.load()
