@@ -1,1 +1,4 @@
 nltk
+spicy
+# you should install spacy en_core_web_sm module using python -m spacy download en_core_web_sm
+# proxy may be used
