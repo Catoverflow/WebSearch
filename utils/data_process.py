@@ -94,7 +94,6 @@ class Data(object):
             self._spacy_lemma_()
         
     def load(self):
-        self._stop_word_init_()
         self._dump_()
         self._pre_process_()
         self._lemma_()
