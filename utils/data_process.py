@@ -10,6 +10,7 @@ class Data(object):
         self.metadata = {}
         self.debug = debug
         self.lemma_engine = lemma_engine
+        print(f"DEBUG: maxfile is set to {self.maxfile}")
 
     def _dump_(self):
         file_id = 0
@@ -76,7 +77,7 @@ class Data(object):
         if self.debug: print(f'DEBUG: All {file_id} file lemmatized')
     
     def _lemma_(self):
-        print('DEBUG: Loading all files, this may take a longer time...')
+        print('DEBUG: Lemmatizing all files, this may take a longer time...')
         if self.lemma_engine == "nltk":
             if self.debug:
                 print("DEBUG: Lemmatization engine: NLTK")
