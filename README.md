@@ -69,12 +69,15 @@ ref: [学长实验报告](https://github.com/hardyho/WebInfo-Lab/blob/main/lab1/
 ├── README.md
 ├── requirements.txt
 ├── semantic_search.py
-└── utils
-    ├── config.py
-    ├── data_process.py
-    ├── __init__.py
-    ├── inverted_index.py
-    └── tf_idf.py
+├── utils
+│   ├── config.py
+│   ├── data_process.py
+│   ├── __init__.py
+│   ├── inverted_index.py
+│   └── tf_idf.py
+└── data #this is not tracked by git
+    └── 2018-0*
+        └── news_*.json
 ~~~~
 
 `bool_search.py` `semantic_search.py` 是主搜索程序，完成搜索功能
@@ -90,3 +93,5 @@ ref: [学长实验报告](https://github.com/hardyho/WebInfo-Lab/blob/main/lab1/
 `utils/tf_idf` 作为 tf-idf 和 semantic search 相关后端
 
 `utils/inverted_index.py` 作为倒排表和 bool search 相关后端
+
+`data` 下存放本次实验的原新闻数据，仅保留在本地
