@@ -77,9 +77,7 @@ ref: [学长实验报告](https://github.com/hardyho/WebInfo-Lab/blob/main/lab1/
 │   ├── data_process.py
 │   ├── __init__.py
 │   ├── inverted_index.py
-│   ├── tf_idf.py
-│   └── config
-│       └── stopwords.txt
+│   └── tf_idf.py
 └── data #this is not tracked by git
     └── 2018-0*
         └── news_*.json
