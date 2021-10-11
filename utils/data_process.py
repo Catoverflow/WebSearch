@@ -8,7 +8,6 @@ class Data(object):
         self.maxfile = maxfile
         self.data = {}
         self.metadata = {}
-        self.stopword = {}
         self.debug = debug
         self.lemma_engine = lemma_engine
         print(f"DEBUG: maxfile is set to {self.maxfile}")
@@ -61,7 +60,7 @@ class Data(object):
     def _nltk_lemma_(self):
         import nltk
         from nltk.stem import WordNetLemmatizer 
-        from nltk.corpus import wordnet
+        from nltk.corpus import wordnet, stopwords
         #this method owe to https://www.machinelearningplus.com/nlp/lemmatization-examples-python/
         def get_wordnet_pos(word):
             tag = nltk.pos_tag([word])[0][1][0].upper()
@@ -70,11 +69,12 @@ class Data(object):
                         "V": wordnet.VERB,
                         "R": wordnet.ADV}
             return tag_dict.get(tag, wordnet.NOUN)
+        stopword = set(stopwords.words('english'))            
         for file_id in self.data:
             lemmatizer = WordNetLemmatizer()
             wordlist = []
             for word in self.data[file_id].split(' '):
-                if word not in self.stopword:
+                if word not in stopword:
                     wordlist.append(word)
             self.data[file_id] = [lemmatizer.lemmatize(word, get_wordnet_pos(word))
                 for word in wordlist]
@@ -92,11 +92,6 @@ class Data(object):
             if self.debug:
                 print("DEBUG: Lemmatization engine: SpaCy")
             self._spacy_lemma_()
-
-    def _stop_word_init_(self,path="./utils/config/stopwords.txt"):
-        with open(path,"r") as f:
-            self.stopword = set(f.read().split(' '))
-            if self.debug: print(f"DEBUG: Read {len(self.stopword)} stopwords from {path}")
         
     def load(self):
         self._stop_word_init_()
