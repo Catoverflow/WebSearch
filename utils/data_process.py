@@ -44,6 +44,8 @@ class Data(object):
             self.data[file_id] =sub('((http|https)\:\/\/)?[a-z0-9\.\/\?\:@\-_=#]+\.([a-z]){2,6}([a-z0-9\.\&\/\?\:@\-_=#])*','',self.data[file_id])
             # match punctuation
             self.data[file_id] =sub(r'[^\w\s]','',self.data[file_id])
+            # match time
+            self.data[file_id] =sub('[0-9]{1,}:[0-9]{1,}|am|pm','',self.data[file_id])
             self.data[file_id] =sub(' {2,}|\\n', ' ',self.data[file_id])
             self.data[file_id] = self.data[file_id].strip()
 
