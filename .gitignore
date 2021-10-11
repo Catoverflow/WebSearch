@@ -7,6 +7,8 @@ __pycache__/
 *.so
 .vscode/
 .idea/
+#raw data this lesson provide
+data/
 # Distribution / packaging
 .Python
 build/
