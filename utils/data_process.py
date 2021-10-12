@@ -7,7 +7,7 @@
 #        Data.metadata() get metadata of file
 #                    data format: metadata[file_id] = {file metadata}
 from json import load
-from os import popen, walk
+from os import walk
 from re import sub
 
 #use global variable to prevent duplicate loading
