@@ -1,13 +1,15 @@
 from json import load
 from os import popen, walk
 from re import sub
+
+#use global variable to prevent duplicate loading
+data = {}
+metadata = {}
 class Data(object):
     def __init__(self, path="./data", maxfile=-1,debug=False,lemma_engine="nltk"):
         self.path = path
         self.poplist = set({})
         self.maxfile = maxfile
-        self.data = {}
-        self.metadata = {}
         self.debug = debug
         self.lemma_engine = lemma_engine
         print(f"DEBUG: maxfile is set to {self.maxfile}")
@@ -20,8 +22,8 @@ class Data(object):
                 with open(f'{root}/{file}', 'r') as f:
                     file_id += 1
                     rawdata = load(f)
-                    self.data[file_id] = rawdata["text"]
-                    self.metadata[file_id] = {
+                    data[file_id] = rawdata["text"]
+                    metadata[file_id] = {
                         "id": rawdata["uuid"],
                         "time": rawdata["published"],
                         "title": rawdata["title"],
@@ -36,25 +38,25 @@ class Data(object):
 
     def _pre_process_(self):
         if self.debug: print('DEBUG: Pre-processing files')
-        for file_id in self.data:
-            self.data[file_id] = self.data[file_id].lower()
+        for file_id in data:
+            data[file_id] = data[file_id].lower()
             # match most of valid email addresses
-            self.data[file_id] =sub('\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b','',self.data[file_id])
+            data[file_id] =sub('\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b','',data[file_id])
             # match url
-            self.data[file_id] =sub('((http|https)\:\/\/)?[a-z0-9\.\/\?\:@\-_=#]+\.([a-z]){2,6}([a-z0-9\.\&\/\?\:@\-_=#])*','',self.data[file_id])
+            data[file_id] =sub('((http|https)\:\/\/)?[a-z0-9\.\/\?\:@\-_=#]+\.([a-z]){2,6}([a-z0-9\.\&\/\?\:@\-_=#])*','',data[file_id])
             # match punctuation
-            self.data[file_id] =sub(r'[^\w\s]','',self.data[file_id])
+            data[file_id] =sub(r'[^\w\s]','',data[file_id])
             # match time
-            self.data[file_id] =sub('[0-9]{1,}:[0-9]{1,}(:[0-9]{2})?(am|pm)?','',self.data[file_id])
-            self.data[file_id] =sub(' {2,}|\\n', ' ',self.data[file_id])
-            self.data[file_id] = self.data[file_id].strip()
+            data[file_id] =sub('[0-9]{1,}:[0-9]{1,}(:[0-9]{2})?(am|pm)?','',data[file_id])
+            data[file_id] =sub(' {2,}|\\n', ' ',data[file_id])
+            data[file_id] = data[file_id].strip()
 
     def _spacy_lemma_(self):
         #deprecated due to low efficiency, stop words not implemented
         import spacy
-        for file_id in self.data:
+        for file_id in data:
             nlp = spacy.load('en_core_web_sm', disable=['parser', 'ner'])
-            self.data[file_id] = [token.lemma_ for token in nlp(self.data[file_id])]
+            data[file_id] = [token.lemma_ for token in nlp(data[file_id])]
             if self.debug and file_id % 100 == 0:
                 print(f'DEBUG: {file_id} file lemmatized')
         if self.debug: print(f'DEBUG: All {file_id} file lemmatized')
@@ -72,13 +74,13 @@ class Data(object):
                         "R": wordnet.ADV}
             return tag_dict.get(tag, wordnet.NOUN)
         stopword = set(stopwords.words('english'))            
-        for file_id in self.data:
+        for file_id in data:
             lemmatizer = WordNetLemmatizer()
             wordlist = []
-            for word in self.data[file_id].split(' '):
+            for word in data[file_id].split(' '):
                 if word not in stopword:
                     wordlist.append(word)
-            self.data[file_id] = [lemmatizer.lemmatize(word, get_wordnet_pos(word))
+            data[file_id] = [lemmatizer.lemmatize(word, get_wordnet_pos(word))
                 for word in wordlist]
             if self.debug and file_id % 100 == 0:
                 print(f'DEBUG: {file_id} file lemmatized')
@@ -94,12 +96,22 @@ class Data(object):
             self._spacy_lemma_()
         
     def load(self):
-        self._dump_()
-        self._pre_process_()
-        self._lemma_()
+        if len(data) == 0:
+            self._dump_()
+            self._pre_process_()
+            self._lemma_()
+            self.loaded = True
         if self.debug:
             while True:
                 file_id = int(input("DEBUG: choose a config to show(number): "))
-                print(self.data[file_id])
+                print(data[file_id])
                 print('-------metadata-------')
-                print(self.metadata[file_id])
+                print(metadata[file_id])
+    
+    @staticmethod
+    def data():
+        return data
+
+    @staticmethod
+    def metadata():
+        return metadata
