@@ -1,5 +1,8 @@
 # WebSearch
 
+## 数据集说明
+
+使用默认的 NLTK lemma 工具时需要先下载 [wordnet](https://raw.githubusercontent.com/nltk/nltk_data/gh-pages/packages/corpora/wordnet.zip) 和 [stopwords](https://raw.githubusercontent.com/nltk/nltk_data/gh-pages/packages/corpora/stopwords.zip)，分别解压到 `nltk_data/corpora/wordnet` 和 `nltk_data/corpora/stopwords`，然后配置环境变量 `NLTK_DATA` 为 `nltk_data` 的位置。当然也可以使用 nltk 自带的 download 功能，不过需要挂代理
 ## 实现思路
 
 ### 数据处理
