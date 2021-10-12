@@ -1,6 +1,7 @@
 # auto load raw files and generate corresponding lemmatized data
 # usage: Data.load() load first, get raw files and lemmatizing them
 #                    duplicate loading is auto-prevented
+#        file_id: unique id for each file, ascending from 1
 #        Data.data() get lemmatized data list
 #                    data format: data[file_id] = [lemma]
 #        Data.metadata() get metadata of file
@@ -50,7 +51,7 @@ class Data(object):
             # match most of valid email addresses
             data[file_id] =sub('\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b','',data[file_id])
             # match url
-            data[file_id] =sub('((http|https)\:\/\/)?[a-z0-9\.\/\?\:@\-_=#]+\.([a-z]){2,6}([a-z0-9\.\&\/\?\:@\-_=#])*','',data[file_id])
+            data[file_id] =sub(r'((http|https)\:\/\/)?[a-z0-9\.\/\?\:@\-_=#]+\.([a-z]){2,6}([a-z0-9\.\&\/\?\:@\-_=#])*','',data[file_id])
             # match time
             data[file_id] =sub('[0-9]{1,}:[0-9]{1,}(:[0-9]{2})?(am|pm)?','',data[file_id])
             # match punctuation
