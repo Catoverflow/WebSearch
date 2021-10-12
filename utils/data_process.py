@@ -1,3 +1,10 @@
+# auto load raw files and generate corresponding lemmatized data
+# usage: Data.load() load first, get raw files and lemmatizing them
+#                    duplicate loading is auto-prevented
+#        Data.data() get lemmatized data list
+#                    data format: data[file_id] = [lemma]
+#        Data.metadata() get metadata of file
+#                    data format: metadata[file_id] = {file metadata}
 from json import load
 from os import popen, walk
 from re import sub
@@ -48,6 +55,7 @@ class Data(object):
             data[file_id] =sub(r'[^\w\s]','',data[file_id])
             # match time
             data[file_id] =sub('[0-9]{1,}:[0-9]{1,}(:[0-9]{2})?(am|pm)?','',data[file_id])
+            # remove multiple space
             data[file_id] =sub(' {2,}|\\n', ' ',data[file_id])
             data[file_id] = data[file_id].strip()
 
