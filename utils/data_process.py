@@ -19,7 +19,7 @@ class Data(object):
         self.maxfile = maxfile
         self.debug = debug
         self.lemma_engine = lemma_engine
-        print(f"DEBUG: maxfile is set to {self.maxfile}")
+        if self.debug: print(f"DEBUG: maxfile is set to {self.maxfile}")
 
     def _dump_(self):
         file_id = 0
@@ -51,12 +51,16 @@ class Data(object):
             data[file_id] =sub('\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b','',data[file_id])
             # match url
             data[file_id] =sub('((http|https)\:\/\/)?[a-z0-9\.\/\?\:@\-_=#]+\.([a-z]){2,6}([a-z0-9\.\&\/\?\:@\-_=#])*','',data[file_id])
-            # match punctuation
-            data[file_id] =sub(r'[^\w\s]','',data[file_id])
             # match time
             data[file_id] =sub('[0-9]{1,}:[0-9]{1,}(:[0-9]{2})?(am|pm)?','',data[file_id])
+            # match punctuation
+            data[file_id] =sub(r'[^\w\s]','',data[file_id])
+            # remove digit
+            data[file_id] =sub('[0-9]+', '',data[file_id])
+            # remove \n when crawled
+            data[file_id] =sub('\\n', '',data[file_id])
             # remove multiple space
-            data[file_id] =sub(' {2,}|\\n', ' ',data[file_id])
+            data[file_id] =sub(' {2,}', ' ',data[file_id])
             data[file_id] = data[file_id].strip()
 
     def _spacy_lemma_(self):

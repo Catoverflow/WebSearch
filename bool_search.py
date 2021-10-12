@@ -3,7 +3,8 @@ DIC={'the':{0,1,2,3,4,5},'a':{0,1,2,3,4,5},'one':{1},'two':{2},'three':{3}}
 reversedchar={"and","or","not","(",")"}
 #输入并初步处理，包括去小写，去多余空格，以空格和括号分词，将保留字之外的词直接转换为对应集合
 def inputprocess():
-    return [DIC[i] if i not in reversedchar else i for i in ' '.join(input("bool_search:input:search source:::").lower().replace('('," ( ").replace(')'," ) ").split()).split(' ')]
+    return [DIC[i] if i not in reversedchar else i for i in ' '.join(input("bool_search:input:search source:::")
+        .lower().replace('('," ( ").replace(')'," ) ").split()).split(' ')]
 #得到全集以处理not
 def getmost(inputlist):
     most=set()
@@ -12,7 +13,7 @@ def getmost(inputlist):
             most=most.union(i)
     return most
 #实际计算
-def  calculate(list):
+def calculate(list):
     calist=list
     most=getmost(list)
     while len(calist)>1:
@@ -50,5 +51,4 @@ def bracketprocess(inputlist):
 #主函数。用来说明怎么让它跑起来。得到的结果是[{0,1,2}]这种形式。
 def main():
     print(bracketprocess(inputprocess()))
-
 main()
