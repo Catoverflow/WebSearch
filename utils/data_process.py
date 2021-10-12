@@ -45,7 +45,7 @@ class Data(object):
             # match punctuation
             self.data[file_id] =sub(r'[^\w\s]','',self.data[file_id])
             # match time
-            self.data[file_id] =sub('[0-9]{1,}:[0-9]{1,}|am|pm','',self.data[file_id])
+            self.data[file_id] =sub('[0-9]{1,}:[0-9]{1,}(:[0-9]{2})?(am|pm)?','',self.data[file_id])
             self.data[file_id] =sub(' {2,}|\\n', ' ',self.data[file_id])
             self.data[file_id] = self.data[file_id].strip()
 
@@ -87,12 +87,10 @@ class Data(object):
     def _lemma_(self):
         if self.debug: print('DEBUG: Lemmatizing all files, this may take a longer time...')
         if self.lemma_engine == "nltk":
-            if self.debug:
-                print("DEBUG: Lemmatization engine: NLTK")
+            if self.debug: print("DEBUG: Lemmatization engine: NLTK")
             self._nltk_lemma_()
         elif self.lemma_engine == "spacy":
-            if self.debug:
-                print("DEBUG: Lemmatization engine: SpaCy")
+            if self.debug: print("DEBUG: Lemmatization engine: SpaCy")
             self._spacy_lemma_()
         
     def load(self):
@@ -100,7 +98,8 @@ class Data(object):
         self._pre_process_()
         self._lemma_()
         if self.debug:
-            file_id = int(input("DEBUG: choose a config to show(number): "))
-            print(self.data[file_id])
-            print('-------metadata-------')
-            print(self.metadata[file_id])
+            while True:
+                file_id = int(input("DEBUG: choose a config to show(number): "))
+                print(self.data[file_id])
+                print('-------metadata-------')
+                print(self.metadata[file_id])
