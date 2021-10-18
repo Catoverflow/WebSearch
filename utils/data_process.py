@@ -13,6 +13,8 @@ from re import sub
 #use global variable to prevent duplicate loading
 data = {}
 metadata = {}
+dict = set()
+
 class Data(object):
     def __init__(self, path="./data", maxfile=-1,debug=False,lemma_engine="nltk"):
         self.path = path
@@ -107,6 +109,15 @@ class Data(object):
         elif self.lemma_engine == "spacy":
             if self.debug: print("DEBUG: Lemmatization engine: SpaCy")
             self._spacy_lemma_()
+
+    def _gen_dict_(self):
+        if len(data) == 0:
+            print("ERROR: data not loaded")
+            return
+        for file_id in data:
+            for word in data[file_id]:
+                if word not in dict:
+                    dict.add(word)
         
     def load(self):
         if len(data) == 0:
@@ -122,9 +133,16 @@ class Data(object):
                 print(metadata[file_id])
     
     @staticmethod
-    def data():
+    def data(self):
         return data
 
     @staticmethod
-    def metadata():
+    def metadata(self):
         return metadata
+
+    @staticmethod
+    def dict(self):
+        if len(dict) == 0:
+            self._gen_dict_()
+            return dict
+
