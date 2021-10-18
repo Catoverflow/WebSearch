@@ -1,5 +1,5 @@
 from data_process import Data
-from math import log2 as log
+from math import log10
 from inverted_index import InvertedIndex
 
 class TF_IDF(object):
@@ -21,7 +21,7 @@ class TF_IDF(object):
                 for oword in self.data[file_id]:
                     if word == oword:
                         freq += 1
-                self.tf[word].append(freq/len(self.data[file_id]))
+                self.tf[word].append(1+log10(freq/len(self.data[file_id])))
     
     def _gen_idf_(self):
         invert = InvertedIndex(self.path,self.maxfile)
@@ -29,7 +29,7 @@ class TF_IDF(object):
         for word in self.dict:
             self.idf[word] = []
             for file_id in self.data:
-                self.idf[word]= log(len(self.data[file_id])/len(invert.docdic))
+                self.idf[word]= log10(len(self.data[file_id])/len(invert.docdic)+1)
 
     def _gen_tf_idf_(self):
         for word in self.dict:
