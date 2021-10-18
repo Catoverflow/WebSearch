@@ -11,8 +11,8 @@ from os import walk
 from re import sub
 
 #use global variable to prevent duplicate loading
-data = {}
-metadata = {}
+data = []
+metadata = []
 dict = set()
 
 class Data(object):
@@ -32,13 +32,13 @@ class Data(object):
                 with open(f'{root}/{file}', 'r') as f:
                     file_id += 1
                     rawdata = load(f)
-                    data[file_id] = rawdata["text"]
-                    metadata[file_id] = {
+                    data.append(rawdata["text"])
+                    metadata.append({
                         "id": rawdata["uuid"],
                         "time": rawdata["published"],
                         "title": rawdata["title"],
                         "author": rawdata["author"],
-                        "url": rawdata["url"]}
+                        "url": rawdata["url"]})
                     if self.debug and file_id % 1000 == 0:
                         print(f'DEBUG: {file_id} file loaded')
                     if self.debug and file_id == self.maxfile:
@@ -48,7 +48,7 @@ class Data(object):
 
     def _pre_process_(self):
         if self.debug: print('DEBUG: Pre-processing files')
-        for file_id in data:
+        for file_id in range(len(data)):
             data[file_id] = data[file_id].lower()
             # match most of valid email addresses
             data[file_id] =sub('\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b','',data[file_id])
@@ -69,7 +69,7 @@ class Data(object):
     def _spacy_lemma_(self):
         #deprecated due to low efficiency, stop words not implemented
         import spacy
-        for file_id in data:
+        for file_id in range(len(data)):
             nlp = spacy.load('en_core_web_sm', disable=['parser', 'ner'])
             data[file_id] = [token.lemma_ for token in nlp(data[file_id])]
             if self.debug and file_id % 100 == 0:
@@ -89,7 +89,7 @@ class Data(object):
                         "R": wordnet.ADV}
             return tag_dict.get(tag, wordnet.NOUN)
         stopword = set(stopwords.words('english'))            
-        for file_id in data:
+        for file_id in range(len(data)):
             lemmatizer = WordNetLemmatizer()
             wordlist = []
             for word in data[file_id].split(' '):
@@ -114,7 +114,7 @@ class Data(object):
         if len(data) == 0:
             print("ERROR: data not loaded")
             return
-        for file_id in data:
+        for file_id in range(len(data)):
             for word in data[file_id]:
                 if word not in dict:
                     dict.add(word)
@@ -134,10 +134,14 @@ class Data(object):
     
     @staticmethod
     def data(self):
+        if len(data) == 0:
+            self.load()
         return data
 
     @staticmethod
     def metadata(self):
+        if len(metadata) == 0:
+            self.load()
         return metadata
 
     @staticmethod
@@ -145,4 +149,3 @@ class Data(object):
         if len(dict) == 0:
             self._gen_dict_()
             return dict
-
