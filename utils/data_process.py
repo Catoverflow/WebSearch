@@ -36,8 +36,6 @@ class Data(object):
                         "title": rawdata["title"],
                         "author": rawdata["author"],
                         "url": rawdata["url"]})
-                    if file_id % 1000 == 0:
-                        logging.debug(f'{file_id} file loaded')
                     if file_id == maxfile:
                         logging.info(f'Maxfile reached, {file_id} file loaded')
                         return
@@ -68,6 +66,7 @@ class Data(object):
             self.data[file_id] = self.data[file_id].strip()
 
     def _lemma_(self):
+        logging.info("Lemmatizing words")
         import nltk
         from nltk.stem import WordNetLemmatizer 
         from nltk.corpus import wordnet, stopwords
@@ -88,11 +87,12 @@ class Data(object):
                     wordlist.append(word)
             self.data[file_id] = [lemmatizer.lemmatize(word, get_wordnet_pos(word))
                 for word in wordlist]
-            if file_id % 100 == 0:
+            if file_id % 200 == 0:
                 logging.debug(f'{file_id} file lemmatized')
-        logging.info(f'All {file_id} file lemmatized')
+        logging.info(f'All {file_id+1} file lemmatized')
 
     def _gen_dict_(self):
+        logging.info("Generating dictionary")
         if len(self.data) == 0:
             logging.error("data not loaded")
             return

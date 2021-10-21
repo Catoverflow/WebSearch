@@ -20,6 +20,4 @@ class Inverted_Index(object):
                 wordid = self.getid[word]
                 if docid not in self.inverted_index[wordid]:
                     self.inverted_index[wordid].append(docid)
-            if docid % 1000 == 0:
-                logging.debug(f'{docid} file processed')
         self.word_count = [len(self.inverted_index[wordid]) for wordid in range(len(self.dict))]
