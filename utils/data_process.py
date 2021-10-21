@@ -3,9 +3,11 @@
 #                    duplicate loading is auto-prevented
 #        file_id: unique id for each file, ascending from 1
 #        Data.data() get lemmatized data list
-#                    data format: data[file_id] = [lemma]
+#                    data format: data = [[file1 word lis],[file2 word list],...]
 #        Data.metadata() get metadata of file
-#                    data format: metadata[file_id] = {file metadata}
+#                    data format: metadata = [{file1 metadata dict},{file2 metadatadoct},...]
+#        Data.dict() get word bag of all files
+#                    data format: dict = {word1,word2,...}
 from json import load
 from os import walk
 from re import sub
