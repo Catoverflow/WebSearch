@@ -1,4 +1,3 @@
-from data_process import Data
 from math import log10
 import logging
 class TF_IDF(object):
@@ -32,12 +31,14 @@ class TF_IDF(object):
     #idf_smooth
     def _gen_idf_(self):
         logging.info("Generating idf table")
-        self.idf = [log10(len(self.data)/(1+self.count[wordid]))+1 for wordid in self.dict]
+        self.idf = [log10(len(self.data)/(1+self.count[wordid]))+1 for wordid in range(len(self.dict))]
 
     def _gen_tf_idf_(self):
         logging.info("Generating tf-idf table")
         for docid in range(len(self.data)):
             self.tf_idf.append([self.idf[wordid]*self.tf[docid][wordid] for wordid in range(len(self.dict))])
-    @property
-    def tf_idf(self):
-        return self.td_idf
+
+    def process(self):
+        self._gen_tf_()
+        self._gen_idf_()
+        self._gen_tf_idf_()

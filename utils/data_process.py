@@ -18,7 +18,7 @@ class Data(object):
     def __init__(self):
         self.data = []
         self.metadata = []
-        self.dictionaty = []
+        self.dict = []
 
     def load(self, path="./data", maxfile=-1):
         logging.info(f"maxfile is set to {maxfile}")
@@ -98,23 +98,10 @@ class Data(object):
             return
         for file_id in range(len(self.data)):
             for word in self.data[file_id]:
-                if word not in dict:
+                if word not in self.dict:
                     self.dict.append(word)
         
     def process(self):
         self._pre_process_()
         self._lemma_()
-        self.loaded = True
-    
-    @property
-    def getdata(self):
-        return self.data
-
-    @property
-    def getmetadata(self):
-        return self.metadata
-
-    @property
-    def dict(self):
         self._gen_dict_()
-        return self.dict
