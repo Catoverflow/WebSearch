@@ -14,29 +14,23 @@ from os import walk
 from re import sub
 import logging
 
-#use global variable to prevent duplicate loading
-data = []
-metadata = []
-dictionary = []
-
 class Data(object):
-    def __init__(self, path="./data", maxfile=-1,lemma_engine="nltk"):
-        self.path = path
-        self.poplist = set({})
-        self.maxfile = maxfile
-        self.lemma_engine = lemma_engine
-        logging.info(f"maxfile is set to {self.maxfile}")
+    def __init__(self):
+        self.data = []
+        self.metadata = []
+        self.dictionaty = []
 
-    def _dump_(self):
+    def load(self, path="./data", maxfile=-1):
+        logging.info(f"maxfile is set to {maxfile}")
         file_id = 0
         logging.info('Loading all files, this may take a long time...')
-        for (root, dirs, files) in walk(self.path):
+        for (root, dirs, files) in walk(path):
             for file in files:
                 with open(f'{root}/{file}', 'r') as f:
                     file_id += 1
                     rawdata = load(f)
-                    data.append(rawdata["text"])
-                    metadata.append({
+                    self.data.append(rawdata["text"])
+                    self.metadata.append({
                         "id": rawdata["uuid"],
                         "time": rawdata["published"],
                         "title": rawdata["title"],
@@ -44,42 +38,36 @@ class Data(object):
                         "url": rawdata["url"]})
                     if file_id % 1000 == 0:
                         logging.debug(f'{file_id} file loaded')
-                    if file_id == self.maxfile:
+                    if file_id == maxfile:
                         logging.info(f'Maxfile reached, {file_id} file loaded')
                         return
         logging.info(f'All {file_id} file loaded')
 
+    def dump(self, sentence):
+        logging.info("Dumping input")
+        self.data[0] = sentence
+
     def _pre_process_(self):
         logging.info('Pre-processing files')
-        for file_id in range(len(data)):
-            data[file_id] = data[file_id].lower()
+        for file_id in range(len(self.data)):
+            self.data[file_id] = self.data[file_id].lower()
             # match most of valid email addresses
-            data[file_id] =sub('\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b','',data[file_id])
+            self.data[file_id] =sub('\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b','',self.data[file_id])
             # match url
-            data[file_id] =sub(r'((http|https)\:\/\/)?[a-z0-9\.\/\?\:@\-_=#]+\.([a-z]){2,6}([a-z0-9\.\&\/\?\:@\-_=#])*','',data[file_id])
+            self.data[file_id] =sub(r'((http|https)\:\/\/)?[a-z0-9\.\/\?\:@\-_=#]+\.([a-z]){2,6}([a-z0-9\.\&\/\?\:@\-_=#])*','',self.data[file_id])
             # match time
-            data[file_id] =sub('[0-9]{1,}:[0-9]{1,}(:[0-9]{2})?(am|pm)?','',data[file_id])
+            self.data[file_id] =sub('[0-9]{1,}:[0-9]{1,}(:[0-9]{2})?(am|pm)?','',self.data[file_id])
             # match punctuation
-            data[file_id] =sub(r'[^\w\s]','',data[file_id])
+            self.data[file_id] =sub(r'[^\w\s]','',self.data[file_id])
             # remove digit
-            data[file_id] =sub('[0-9]+', '',data[file_id])
+            self.data[file_id] =sub('[0-9]+', '',self.data[file_id])
             # remove \n when crawled
-            data[file_id] =sub('\\n', '',data[file_id])
+            self.data[file_id] =sub('\\n', '',self.data[file_id])
             # remove multiple space
-            data[file_id] =sub(' {2,}', ' ',data[file_id])
-            data[file_id] = data[file_id].strip()
+            self.data[file_id] =sub(' {2,}', ' ',self.data[file_id])
+            self.data[file_id] = self.data[file_id].strip()
 
-    def _spacy_lemma_(self):
-        #deprecated due to low efficiency, stop words not implemented
-        import spacy
-        for file_id in range(len(data)):
-            nlp = spacy.load('en_core_web_sm', disable=['parser', 'ner'])
-            data[file_id] = [token.lemma_ for token in nlp(data[file_id])]
-            if file_id % 100 == 0:
-                logging.debug(f'{file_id} file lemmatized')
-        logging.info(f'All {file_id} file lemmatized')
-
-    def _nltk_lemma_(self):
+    def _lemma_(self):
         import nltk
         from nltk.stem import WordNetLemmatizer 
         from nltk.corpus import wordnet, stopwords
@@ -92,51 +80,41 @@ class Data(object):
                         "R": wordnet.ADV}
             return tag_dict.get(tag, wordnet.NOUN)
         stopword = set(stopwords.words('english'))            
-        for file_id in range(len(data)):
+        for file_id in range(len(self.data)):
             lemmatizer = WordNetLemmatizer()
             wordlist = []
-            for word in data[file_id].split(' '):
+            for word in self.data[file_id].split(' '):
                 if word not in stopword:
                     wordlist.append(word)
-            data[file_id] = [lemmatizer.lemmatize(word, get_wordnet_pos(word))
+            self.data[file_id] = [lemmatizer.lemmatize(word, get_wordnet_pos(word))
                 for word in wordlist]
             if file_id % 100 == 0:
                 logging.debug(f'{file_id} file lemmatized')
         logging.info(f'All {file_id} file lemmatized')
-    
-    def _lemma_(self):
-        logging.info('Lemmatizing all files, this may take a longer time...')
-        if self.lemma_engine == "nltk":
-            logging.info("Lemmatization engine: NLTK")
-            self._nltk_lemma_()
-        elif self.lemma_engine == "spacy":
-            logging.info("Lemmatization engine: SpaCy")
-            self._spacy_lemma_()
 
     def _gen_dict_(self):
-        if len(data) == 0:
+        if len(self.data) == 0:
             logging.error("data not loaded")
             return
-        for file_id in range(len(data)):
-            for word in data[file_id]:
+        for file_id in range(len(self.data)):
+            for word in self.data[file_id]:
                 if word not in dict:
-                    dictionary.append(word)
+                    self.dict.append(word)
         
-    def load(self):
-        if len(data) == 0:
-            self._dump_()
-            self._pre_process_()
-            self._lemma_()
-            self.loaded = True
+    def process(self):
+        self._pre_process_()
+        self._lemma_()
+        self.loaded = True
     
-    @staticmethod
-    def data():
-        return data
+    @property
+    def getdata(self):
+        return self.data
 
-    @staticmethod
-    def metadata():
-        return metadata
+    @property
+    def getmetadata(self):
+        return self.metadata
 
-    @staticmethod
-    def dict():
-        return dictionary
+    @property
+    def dict(self):
+        self._gen_dict_()
+        return self.dict
