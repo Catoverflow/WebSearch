@@ -7,7 +7,8 @@
 #        Data.metadata() get metadata of file
 #                    data format: metadata = [{file1 metadata dict},{file2 metadatadoct},...]
 #        Data.dict() get word bag of all files
-#                    data format: dict = {word1,word2,...}
+#                    data format: dict = [word1,word2,...]
+#                    use list instead of set is to keep words in order
 from json import load
 from os import walk
 from re import sub
@@ -16,7 +17,7 @@ import logging
 #use global variable to prevent duplicate loading
 data = []
 metadata = []
-dict = set()
+dictionary = []
 
 class Data(object):
     def __init__(self, path="./data", maxfile=-1,lemma_engine="nltk"):
@@ -119,7 +120,7 @@ class Data(object):
         for file_id in range(len(data)):
             for word in data[file_id]:
                 if word not in dict:
-                    dict.add(word)
+                    dictionary.append(word)
         
     def load(self):
         if len(data) == 0:
@@ -128,20 +129,14 @@ class Data(object):
             self._lemma_()
             self.loaded = True
     
-    @property
-    def data(self):
-        if len(data) == 0:
-            self.load()
+    @staticmethod
+    def data():
         return data
 
-    @property
-    def metadata(self):
-        if len(metadata) == 0:
-            self.load()
+    @staticmethod
+    def metadata():
         return metadata
 
-    @property
-    def dict(self):
-        if len(dict) == 0:
-            self._gen_dict_()
-            return dict
+    @staticmethod
+    def dict():
+        return dictionary

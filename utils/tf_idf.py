@@ -6,39 +6,38 @@ class TF_IDF(object):
         self.data = data
         self.dict = dictionary
         self.count = word_occur_count
-        self.tf = {}
-        self.idf = {}
-        self.tf_idf = {}
+        self.tf = []
+        self.idf =[]
+        self.tf_idf = []
+        # each doc's tf-idf vector is set to follow the word order in dict
 
     def _gen_tf_(self):
         logging.info("Generating tf table")
-        for word in self.dict:
-            freq = 0
-            self.tf[word] = []
-            for docid in range(len(self.data)):
-                for oword in self.data[docid]:
-                    if word == oword:
-                        freq += 1
-                self.tf[word].append(1+log10(freq/len(self.data[docid])))
-                if docid % 1000 == 0:
-                    logging.debug(f'{docid} file processed')
-        pass # switch to count word only in doc
-    
+
+        for docid in range(len(self.data)):
+            freq = {}
+            for word in self.data[docid]:
+                if word not in freq:
+                    freq[word] = 1
+                else:
+                    freq[word] += 1
+            doctf = []
+            for word in self.dict:
+                if word in freq.keys():
+                    doctf.append(log10(1+freq[word]/len(self.data[docid])))
+                else:
+                    doctf.append(0)
+            self.tf.append(doctf)
+
+    #idf_smooth
     def _gen_idf_(self):
         logging.info("Generating idf table")
-        for word in self.dict:
-            self.idf[word] = []
-            for docid in range(len(self.data)):
-                self.idf[word].append(log10(len(self.data[docid])/len(self.count[word])+1))
-                if docid % 1000 == 0:
-                    logging.debug(f'{docid} file processed')
-            pass
+        self.idf = [log10(len(self.data)/(1+self.count[wordid]))+1 for wordid in self.dict]
 
     def _gen_tf_idf_(self):
         logging.info("Generating tf-idf table")
-        for word in self.dict:
-            self.tf_idf[word] = self.tf[word]*self.idf[word]
-
+        for docid in range(len(self.data)):
+            self.tf_idf.append([self.idf[wordid]*self.tf[docid][wordid] for wordid in range(len(self.dict))])
     @property
     def tf_idf(self):
         return self.td_idf
