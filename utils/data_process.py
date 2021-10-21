@@ -11,6 +11,7 @@
 from json import load
 from os import walk
 from re import sub
+import logging
 
 #use global variable to prevent duplicate loading
 data = []
@@ -18,17 +19,16 @@ metadata = []
 dict = set()
 
 class Data(object):
-    def __init__(self, path="./data", maxfile=-1,debug=False,lemma_engine="nltk"):
+    def __init__(self, path="./data", maxfile=-1,lemma_engine="nltk"):
         self.path = path
         self.poplist = set({})
         self.maxfile = maxfile
-        self.debug = debug
         self.lemma_engine = lemma_engine
-        if self.debug: print(f"DEBUG: maxfile is set to {self.maxfile}")
+        logging.info(f"maxfile is set to {self.maxfile}")
 
     def _dump_(self):
         file_id = 0
-        if self.debug: print('DEBUG: Loading all files, this may take a long time...')
+        logging.info('Loading all files, this may take a long time...')
         for (root, dirs, files) in walk(self.path):
             for file in files:
                 with open(f'{root}/{file}', 'r') as f:
@@ -41,15 +41,15 @@ class Data(object):
                         "title": rawdata["title"],
                         "author": rawdata["author"],
                         "url": rawdata["url"]})
-                    if self.debug and file_id % 1000 == 0:
-                        print(f'DEBUG: {file_id} file loaded')
-                    if self.debug and file_id == self.maxfile:
-                        print(f'DEBUG: Maxfile reached, {file_id} file loaded')
+                    if file_id % 1000 == 0:
+                        logging.info(f'{file_id} file loaded')
+                    if file_id == self.maxfile:
+                        logging.info(f'Maxfile reached, {file_id} file loaded')
                         return
-        if self.debug: print(f'DEBUG: All {file_id} file loaded')
+        logging.info(f'All {file_id} file loaded')
 
     def _pre_process_(self):
-        if self.debug: print('DEBUG: Pre-processing files')
+        logging.info('Pre-processing files')
         for file_id in range(len(data)):
             data[file_id] = data[file_id].lower()
             # match most of valid email addresses
@@ -75,8 +75,8 @@ class Data(object):
             nlp = spacy.load('en_core_web_sm', disable=['parser', 'ner'])
             data[file_id] = [token.lemma_ for token in nlp(data[file_id])]
             if self.debug and file_id % 100 == 0:
-                print(f'DEBUG: {file_id} file lemmatized')
-        if self.debug: print(f'DEBUG: All {file_id} file lemmatized')
+                logging.info(f'{file_id} file lemmatized')
+        logging.info(f'All {file_id} file lemmatized')
 
     def _nltk_lemma_(self):
         import nltk
@@ -99,22 +99,22 @@ class Data(object):
                     wordlist.append(word)
             data[file_id] = [lemmatizer.lemmatize(word, get_wordnet_pos(word))
                 for word in wordlist]
-            if self.debug and file_id % 100 == 0:
-                print(f'DEBUG: {file_id} file lemmatized')
-        if self.debug: print(f'DEBUG: All {file_id} file lemmatized')
+            if file_id % 100 == 0:
+                logging.info(f'{file_id} file lemmatized')
+        logging.info(f'All {file_id} file lemmatized')
     
     def _lemma_(self):
-        if self.debug: print('DEBUG: Lemmatizing all files, this may take a longer time...')
+        logging.info('Lemmatizing all files, this may take a longer time...')
         if self.lemma_engine == "nltk":
-            if self.debug: print("DEBUG: Lemmatization engine: NLTK")
+            logging.info("Lemmatization engine: NLTK")
             self._nltk_lemma_()
         elif self.lemma_engine == "spacy":
-            if self.debug: print("DEBUG: Lemmatization engine: SpaCy")
+            logging.info("Lemmatization engine: SpaCy")
             self._spacy_lemma_()
 
     def _gen_dict_(self):
         if len(data) == 0:
-            print("ERROR: data not loaded")
+            logging.error("data not loaded")
             return
         for file_id in range(len(data)):
             for word in data[file_id]:
@@ -127,12 +127,6 @@ class Data(object):
             self._pre_process_()
             self._lemma_()
             self.loaded = True
-        if self.debug:
-            while True:
-                file_id = int(input("DEBUG: choose a config to show(number): "))
-                print(data[file_id])
-                print('-------metadata-------')
-                print(metadata[file_id])
     
     @staticmethod
     def data(self):
