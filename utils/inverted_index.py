@@ -1,8 +1,9 @@
 import logging
 
-# usage:InvertedIndex(x).process()
-# output:x.docdic={word1:{doc1,doc2,doc3},word2:{doc1,doc2,doc3}}
-# index of doc starts with 0
+# usage: Inverted_Index.process()
+# output:
+#        word_count = wordid: count of docs in which word occurs
+#        inverted_index = wordid: [doc1, doc2,...]
 class Inverted_Index(object):
     def __init__(self, data, dictionary):
         self.data = data
