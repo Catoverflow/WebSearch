@@ -42,7 +42,7 @@ class Data(object):
                         "author": rawdata["author"],
                         "url": rawdata["url"]})
                     if file_id % 1000 == 0:
-                        logging.info(f'{file_id} file loaded')
+                        logging.debug(f'{file_id} file loaded')
                     if file_id == self.maxfile:
                         logging.info(f'Maxfile reached, {file_id} file loaded')
                         return
@@ -74,8 +74,8 @@ class Data(object):
         for file_id in range(len(data)):
             nlp = spacy.load('en_core_web_sm', disable=['parser', 'ner'])
             data[file_id] = [token.lemma_ for token in nlp(data[file_id])]
-            if self.debug and file_id % 100 == 0:
-                logging.info(f'{file_id} file lemmatized')
+            if file_id % 100 == 0:
+                logging.debug(f'{file_id} file lemmatized')
         logging.info(f'All {file_id} file lemmatized')
 
     def _nltk_lemma_(self):
@@ -100,7 +100,7 @@ class Data(object):
             data[file_id] = [lemmatizer.lemmatize(word, get_wordnet_pos(word))
                 for word in wordlist]
             if file_id % 100 == 0:
-                logging.info(f'{file_id} file lemmatized')
+                logging.debug(f'{file_id} file lemmatized')
         logging.info(f'All {file_id} file lemmatized')
     
     def _lemma_(self):
@@ -128,19 +128,19 @@ class Data(object):
             self._lemma_()
             self.loaded = True
     
-    @staticmethod
+    @property
     def data(self):
         if len(data) == 0:
             self.load()
         return data
 
-    @staticmethod
+    @property
     def metadata(self):
         if len(metadata) == 0:
             self.load()
         return metadata
 
-    @staticmethod
+    @property
     def dict(self):
         if len(dict) == 0:
             self._gen_dict_()
