@@ -45,6 +45,10 @@ class Data(object):
         logging.info("Dumping input")
         self.data[0] = sentence
 
+    def lemma_word(self, word_list):
+        self.data[0] = word_list
+        self._lemma_()
+
     def _pre_process_(self):
         logging.info('Pre-processing files')
         for file_id in range(len(self.data)):
@@ -64,6 +68,7 @@ class Data(object):
             # remove multiple space
             self.data[file_id] =sub(' {2,}', ' ',self.data[file_id])
             self.data[file_id] = self.data[file_id].strip()
+            self.data[file_id] = self.data[file_id].split()
 
     def _lemma_(self):
         logging.info("Lemmatizing words")
@@ -82,14 +87,14 @@ class Data(object):
         for file_id in range(len(self.data)):
             lemmatizer = WordNetLemmatizer()
             wordlist = []
-            for word in self.data[file_id].split(' '):
+            for word in self.data[file_id]:
                 if word not in stopword:
                     wordlist.append(word)
             self.data[file_id] = [lemmatizer.lemmatize(word, get_wordnet_pos(word))
                 for word in wordlist]
             if file_id % 200 == 0:
-                logging.debug(f'{file_id} file lemmatized')
-        logging.info(f'All {file_id+1} file lemmatized')
+                logging.debug(f'{file_id} instance(s) lemmatized')
+        logging.info(f'All {file_id+1} instance(s) lemmatized')
 
     def _gen_dict_(self):
         logging.info("Generating dictionary")

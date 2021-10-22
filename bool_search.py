@@ -1,66 +1,112 @@
-# {A:{b,c,d}}，从倒排表建立的字典
-# DIC = {'the': {0, 1, 2, 3, 4, 5}, 'a': {0, 1, 2, 3, 4, 5}, 'one': {1}, 'two': {2}, 'three': {3}}
+import logging
+from os import stat
+from utils.data_process import Data
+from re import L, sub
+class Bool_Search(object):
+    def __init__(self, inverted_index, look_up_dict):
+        self.ii = inverted_index
+        self.lookup = look_up_dict
 
+    def get_ii(self, word):
+        return self.ii[self.lookup[word]]
 
-# userage: BoolSearch(docdic).processAndPrint()
-# docdic:example:{'the': {0, 1, 2, 3, 4, 5}, 'a': {0, 1, 2, 3, 4, 5}, 'one': {1}, 'two': {2}, 'three': {3}}
-class BoolSearch(object):
-    # init class with given inverted_index
-    def __init__(self, docdic):
-        self._docdic = docdic
-        self._reversedchar = {"and", "or", "not", "(", ")"}
-        self._inlist = []
-        self._most = set()
+    def search(self, query):
+        bracket_stack = []
+        query = self._preprocess_(query)
+        index = 0
+        # resolve priority provided by brackets
+        # and pass plain expression to self._process_
+        while index < len(query):
+            if query[index] == '(':
+                bracket_stack.append({'(':index})
+            elif query[index] == ')':
+                # match last left bracket
+                l_bracket_index = bracket_stack.pop()['(']
+                # pop left bracket
+                query.pop(l_bracket_index)
+                # pop expression in between
+                # replace right bracket with procssed single inverted index
+                to_process = [query.pop(l_bracket_index) for i in range(0, index-l_bracket_index-1)]
+                query[l_bracket_index] = self._process_(to_process)
+                index = l_bracket_index + 1
+                pass
+            elif query[index] != 'and' and query[index] != 'not' and query[index] != 'or':
+                # replace word with corresponding inverted index
+                query[index] = self.get_ii()
+        if index > 1:
+            query = self._process_(query)
 
-    # input, preprocess and calcute the universial set
-    def _getInputAndMost_(self):
-        inputchr = input("BoolSearch***Input:\n")
-        self._inlist = [i if i in self._reversedchar else self._docdic[i] for i in
-                        inputchr.lower().replace('(', " ( ").replace(')', " ) ").split()]
-        for key in self._inlist:
-            if isinstance(key, set):
-                self._most.union(key)
-
-    # set calculate
-    def _calculate_(self, partlist):
-        calist = partlist
-        while len(calist) > 1:
-            if "not" in calist:
-                for j in range(len(calist)):
-                    if calist[j] == "not":
-                        calist[j + 1] = self._most.difference(calist[j + 1])
-                        del (calist[j])
-                        break
+    @staticmethod
+    def intercetion(iia, iib):
+        i = 0
+        j = 0
+        res = []
+        while i < len(iia) and j < len(iib):
+            if iia[i] > iib[j]:
+                j += 1
+            elif iia[i] < iib[j]:
+                i += 1
             else:
-                for j in range(len(calist)):
-                    if calist[j] == "and":
-                        calist[j + 1] = calist[j - 1].intersection(calist[j + 1])
-                        del (calist[j - 1:j + 1])
-                        break
-                    if calist[j] == "or":
-                        calist[j + 1] = calist[j - 1].union(calist[j + 1])
-                        del (calist[j - 1:j + 1])
-                        break
-        return calist
+                res.append(iia[i])
+                i += 1
+                j += 1
+        return res
 
-    # Recursively handle backets
-    def _backetProcess_(self):
-        if ")" in self._inlist:
-            r_index = self._inlist.index(")")
-            inputlist_temp = self._inlist[:r_index]
-            l_index = 0
-            for i in range(len(inputlist_temp)):
-                if inputlist_temp[i] == "(":
-                    l_index = i
-            inputlist_temp = self._inlist[l_index + 1:r_index]
-            self._inlist[l_index:r_index + 1] = self._calculate_(inputlist_temp)
-            self._backetProcess_()
-        return self._calculate_(self._inlist)
+    @staticmethod
+    def strip(iia, iib):
+        i = 0
+        j = 0
+        res = iia
+        while i < len(res) and j < len(iib):
+            if res[i] > iib[j]:
+                j += 1
+            elif res[i] < iib[j]:
+                i += 1
+            else:
+                res.pop(i)
+                j += 1
+        return res
+    
+    @staticmethod
+    def complement(iia, iib):
+        i = 0
+        j = 0
+        res = []
+        while i < len(iia) and j < len(iib):
+            if iia[i] > iib[j]:
+                res.append(iib[j])
+                j += 1
+            elif iia[i] < iib[j]:
+                res.append(iia[i])
+                i += 1
+            else:
+                res.append(iia[i])
+                i += 1
+                j += 1
+        return res
 
-    # External interface
-    def processAndPrint(self):
-        self._getInputAndMost_()
-        print(self._backetProcess_())
+    # generate key word list from query string
+    def _preprocess_(query):
+        # add space before & after bracket for split
+        query = sub('(', ' ( ',query)
+        query = sub(')', ' ) ',query)
+        # remove continuous spaces
+        query = sub(' {2,}', ' ',query)
+        query = query.lower()
+        query = query.split()
+        data = Data()
+        data.lemma_word(query)
+        return data.data[0]
 
-# aBoolSearchTest = BoolSearch(DIC)
-# aBoolSearchTest.processAndPrint()
+    # calculate target inverted index by operator
+    @staticmethod
+    def process(ii_list):
+        while len(ii_list) > 1:
+            iia, op, iib = ii_list.pop(0), ii_list.pop(0), ii_list[0]
+            if op == 'and':
+                ii_list[0] = Bool_Search.complement(iia, iib)
+            elif op == 'or':
+                ii_list[0] = Bool_Search.union(iia, iib)
+            elif op == 'not':
+                ii_list[0] = Bool_Search.strip(iia, iib)
+        return ii_list
