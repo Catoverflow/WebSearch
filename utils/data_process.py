@@ -43,10 +43,10 @@ class Data(object):
 
     def dump(self, sentence):
         logging.info("Dumping input")
-        self.data[0] = sentence
+        self.data.append(sentence)
 
     def lemma_word(self, word_list):
-        self.data[0] = word_list
+        self.data.append(word_list)
         self._lemma_()
 
     def _pre_process_(self):
@@ -97,15 +97,22 @@ class Data(object):
         logging.info(f'All {file_id+1} instance(s) lemmatized')
 
     def _gen_dict_(self):
+        lookup_table = {}
+        dict_size = 0
         logging.info("Generating dictionary")
         if len(self.data) == 0:
             logging.error("data not loaded")
             return
         for file_id in range(len(self.data)):
+            word_id_list = []
             for word in self.data[file_id]:
                 if word not in self.dict:
                     self.dict.append(word)
-        
+                    lookup_table[word] = dict_size
+                    dict_size += 1
+                word_id_list.append(lookup_table[word])
+            self.data[file_id] = word_id_list
+
     def process(self):
         self._pre_process_()
         self._lemma_()
