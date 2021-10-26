@@ -3,12 +3,13 @@ import logging
 # usage: Inverted_Index.process()
 # output:
 #        word_count = wordid: count of docs in which word occurs
-#        inverted_index = wordid: [doc1, doc2,...]
+#        inverted_index = [doc1, doc2,...], [doc, ...], ...
+#                           ↑ index = wordid
 class Inverted_Index(object):
     def __init__(self, data, dictionary):
         self.data = data
         self.dict = dictionary
-        self.inverted_index = {wordid:[] for wordid in range(len(self.dict))}
+        self.inverted_index = [[] for wordid in range(len(self.dict))]
         self.word_count = []
         # lookup table for word and id
 

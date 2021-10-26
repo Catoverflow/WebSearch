@@ -13,7 +13,9 @@ from json import load
 from os import walk
 from re import sub
 import logging
-
+from nltk.stem import WordNetLemmatizer 
+from nltk.corpus import wordnet, stopwords
+from nltk import pos_tag
 class Data(object):
     def __init__(self):
         self.data = []
@@ -70,28 +72,30 @@ class Data(object):
             self.data[file_id] = self.data[file_id].strip()
             self.data[file_id] = self.data[file_id].split()
 
+    def _strip_stop_words_(self):
+        logging.info("Stripping stop words")
+        stopword = set(stopwords.words('english'))
+        for file_id in range(len(self.data)):
+            wordlist = []
+            for word in self.data[file_id]:
+                if word not in stopword:
+                    wordlist.append(word)
+            self.data[file_id] = wordlist
+
     def _lemma_(self):
         logging.info("Lemmatizing words")
-        import nltk
-        from nltk.stem import WordNetLemmatizer 
-        from nltk.corpus import wordnet, stopwords
         #this method owe to https://www.machinelearningplus.com/nlp/lemmatization-examples-python/
         def get_wordnet_pos(word):
-            tag = nltk.pos_tag([word])[0][1][0].upper()
+            tag = pos_tag([word])[0][1][0].upper()
             tag_dict = {"J": wordnet.ADJ,
                         "N": wordnet.NOUN,
                         "V": wordnet.VERB,
                         "R": wordnet.ADV}
             return tag_dict.get(tag, wordnet.NOUN)
-        stopword = set(stopwords.words('english'))            
         for file_id in range(len(self.data)):
             lemmatizer = WordNetLemmatizer()
-            wordlist = []
-            for word in self.data[file_id]:
-                if word not in stopword:
-                    wordlist.append(word)
             self.data[file_id] = [lemmatizer.lemmatize(word, get_wordnet_pos(word))
-                for word in wordlist]
+                for word in self.data[file_id]]
             if file_id % 200 == 0:
                 logging.debug(f'{file_id} instance(s) lemmatized')
         logging.info(f'All {file_id+1} instance(s) lemmatized')
@@ -115,5 +119,6 @@ class Data(object):
 
     def process(self):
         self._pre_process_()
+        self._strip_stop_words_()
         self._lemma_()
         self._gen_dict_()

@@ -5,14 +5,17 @@ from re import L, sub
 class Bool_Search(object):
     def __init__(self, inverted_index, look_up_dict):
         self.ii = inverted_index
-        self.lookup = look_up_dict
+        self.lookup = {look_up_dict[wordid]:wordid for wordid in range(len(look_up_dict))}
 
-    def get_ii(self, word):
+    def _get_ii_(self, word):
+        # query word not found in documentss
+        if word not in self.lookup:
+            return None
         return self.ii[self.lookup[word]]
 
     def search(self, query):
         bracket_stack = []
-        query = self._preprocess_(query)
+        query = Bool_Search._preprocess_(query)
         index = 0
         # resolve priority provided by brackets
         # and pass plain expression to self._process_
@@ -27,17 +30,25 @@ class Bool_Search(object):
                 # pop expression in between
                 # replace right bracket with procssed single inverted index
                 to_process = [query.pop(l_bracket_index) for i in range(0, index-l_bracket_index-1)]
-                query[l_bracket_index] = self._process_(to_process)
+                query[l_bracket_index] = Bool_Search.process(to_process)
                 index = l_bracket_index + 1
-                pass
-            elif query[index] != 'and' and query[index] != 'not' and query[index] != 'or':
-                # replace word with corresponding inverted index
-                query[index] = self.get_ii()
+            # pass bool keyword to process to handle, ignore
+            elif query[index] == 'and' or query[index] == 'not' or query[index] == 'or':
+                index += 1
+            # replace word with corresponding inverted index
+            else:
+                query[index] = self._get_ii_(query[index])
+                index += 1
+            
         if index > 1:
-            query = self._process_(query)
+            query = Bool_Search.process(query)
+        return query[0]
 
     @staticmethod
     def intercetion(iia, iib):
+        # handle circumstances in which one or more word is not found
+        if iia == None or iib == None:
+            return None
         i = 0
         j = 0
         res = []
@@ -54,6 +65,11 @@ class Bool_Search(object):
 
     @staticmethod
     def strip(iia, iib):
+        # handle circumstances in which one or more word is not found
+        if iia == None:
+            return None
+        elif iib == None:
+            return iia
         i = 0
         j = 0
         res = iia
@@ -69,6 +85,13 @@ class Bool_Search(object):
     
     @staticmethod
     def complement(iia, iib):
+        # handle circumstances in which one or more word is not found
+        if iia == None and iib == None:
+            return None
+        elif iia == None:
+            return iib
+        elif iib == None:
+            return iia
         i = 0
         j = 0
         res = []
@@ -88,8 +111,8 @@ class Bool_Search(object):
     # generate key word list from query string
     def _preprocess_(query):
         # add space before & after bracket for split
-        query = sub('(', ' ( ',query)
-        query = sub(')', ' ) ',query)
+        query = sub('\(', ' \( ',query)
+        query = sub('\)', ' \) ',query)
         # remove continuous spaces
         query = sub(' {2,}', ' ',query)
         query = query.lower()
