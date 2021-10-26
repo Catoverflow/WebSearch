@@ -1,5 +1,4 @@
 import logging
-from os import stat
 from utils.data_process import Data
 from re import L, sub
 class Bool_Search(object):
