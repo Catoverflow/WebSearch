@@ -98,3 +98,9 @@ ref: [学长实验报告](https://github.com/hardyho/WebInfo-Lab/blob/main/lab1/
 `utils/inverted_index.py` 作为倒排表和 bool search 相关后端
 
 `data` 下存放本次实验的原新闻数据，仅保留在本地
+
+## Todos
+
+- bool search 的近义词支持 by word2vec
+
+- semantic search 加入标题的权重
