@@ -34,10 +34,11 @@ class Data(object):
                     self.data.append(rawdata["text"])
                     self.metadata.append({
                         "id": rawdata["uuid"],
-                        "time": rawdata["published"],
-                        "title": rawdata["title"],
-                        "author": rawdata["author"],
-                        "url": rawdata["url"]})
+                        #"time": rawdata["published"],
+                        "title": rawdata["title"]
+                        #"author": rawdata["author"],
+                        #"url": rawdata["url"]
+                        })
                     if file_id == maxfile:
                         logging.info(f'Maxfile reached, {file_id} file loaded')
                         return
