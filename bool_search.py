@@ -128,7 +128,41 @@ class Bool_Search(object):
             if op == 'and':
                 ii_list[0] = Bool_Search.complement(iia, iib)
             elif op == 'or':
-                ii_list[0] = Bool_Search.union(iia, iib)
+                ii_list[0] = Bool_Search.intercetion(iia, iib)
             elif op == 'not':
                 ii_list[0] = Bool_Search.strip(iia, iib)
         return ii_list
+
+def load():
+    import zstd
+    import pickle
+    with open('output/inverted_index.zstd','rb') as f:
+        ii = zstd.decompress(f.read())
+        ii = pickle.loads(ii)
+        f.close()
+    with open('output/dictionary.zstd','rb') as f:
+        dictionary = zstd.decompress(f.read())
+        dictionary = pickle.loads(dictionary)
+        f.close()
+    with open('output/metadata.zstd','rb') as f:
+        metadata = zstd.decompress(f.read())
+        metadata = pickle.loads(metadata)
+        f.close()
+    return ii, dictionary, metadata
+
+
+if __name__ == '__main__':
+    # Beware that python API limit data size to 2GB
+    # Coz all source files' size = 1.9GB so we can ignore it safely
+    logging.info("Loading data from file")
+    ii, dictionary, metadata = load()
+    bs = Bool_Search(ii, dictionary)
+    print("Ctrl + C to exit")
+    while True:
+        query = input("Enter expression for bool search: ")
+        res = bs.search(query)
+        if res!= None:
+            for docid in range(len(res)):
+                print('{}\t{}'.format(docid+1,metadata[res[docid]]['title']))
+        else:
+            print('Not found')
