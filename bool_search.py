@@ -1,4 +1,5 @@
 import logging
+import re
 from utils.data_process import Data
 from re import L, sub
 class Bool_Search(object):
@@ -13,17 +14,18 @@ class Bool_Search(object):
         return self.ii[self.lookup[word]]
 
     def search(self, query):
-        bracket_stack = []
+        l_bracket_stack = []
         query = Bool_Search._preprocess_(query)
         index = 0
         # resolve priority provided by brackets
         # and pass plain expression to self._process_
         while index < len(query):
             if query[index] == '(':
-                bracket_stack.append({'(':index})
+                l_bracket_stack.append(index)
+                index += 1
             elif query[index] == ')':
                 # match last left bracket
-                l_bracket_index = bracket_stack.pop()['(']
+                l_bracket_index = l_bracket_stack.pop()
                 # pop left bracket
                 query.pop(l_bracket_index)
                 # pop expression in between
@@ -40,11 +42,11 @@ class Bool_Search(object):
                 index += 1
             
         if index > 1:
-            query = Bool_Search.process(query)
+            query[0] = Bool_Search.process(query)
         return query[0]
 
     @staticmethod
-    def intercetion(iia, iib):
+    def intersection(iia, iib):
         # handle circumstances in which one or more word is not found
         if iia == None or iib == None:
             return None
@@ -105,13 +107,17 @@ class Bool_Search(object):
                 res.append(iia[i])
                 i += 1
                 j += 1
+        if i < len(iia):
+            res.extend(iia[i:])
+        if j < len(iib):
+            res.extend(iib[j:])
         return res
 
     # generate key word list from query string
     def _preprocess_(query):
         # add space before & after bracket for split
-        query = sub('\(', ' \( ',query)
-        query = sub('\)', ' \) ',query)
+        query = sub('\(', ' ( ',query)
+        query = sub('\)', ' ) ',query)
         # remove continuous spaces
         query = sub(' {2,}', ' ',query)
         query = query.lower()
@@ -126,12 +132,12 @@ class Bool_Search(object):
         while len(ii_list) > 1:
             iia, op, iib = ii_list.pop(0), ii_list.pop(0), ii_list[0]
             if op == 'and':
-                ii_list[0] = Bool_Search.complement(iia, iib)
+                ii_list[0] = Bool_Search.intersection(iia, iib)
             elif op == 'or':
-                ii_list[0] = Bool_Search.intercetion(iia, iib)
+                ii_list[0] = Bool_Search.complement(iia, iib)
             elif op == 'not':
                 ii_list[0] = Bool_Search.strip(iia, iib)
-        return ii_list
+        return ii_list[0]
 
 def load():
     import zstd
