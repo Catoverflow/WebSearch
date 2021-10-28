@@ -13,14 +13,27 @@ from json import load
 from os import walk
 from re import sub
 import logging
-from nltk.stem import WordNetLemmatizer 
+from nltk.stem import WordNetLemmatizer
 from nltk.corpus import wordnet, stopwords
 from nltk import pos_tag
+
+
 class Data(object):
     def __init__(self):
         self.data = []
+        self.headerdata = []
         self.metadata = []
         self.dict = []
+        self.stopword = set(stopwords.words('english'))
+        self.lemmatizer = WordNetLemmatizer()
+
+    def get_wordnet_pos(word):
+        tag = pos_tag([word])[0][1][0].upper()
+        tag_dict = {"J": wordnet.ADJ,
+                    "N": wordnet.NOUN,
+                    "V": wordnet.VERB,
+                    "R": wordnet.ADV}
+        return tag_dict.get(tag, wordnet.NOUN)
 
     def load(self, path="./data", maxfile=-1):
         logging.info(f"maxfile is set to {maxfile}")
@@ -32,13 +45,14 @@ class Data(object):
                     file_id += 1
                     rawdata = load(f)
                     self.data.append(rawdata["text"])
+                    self.headerdata.append(rawdata['title'])
                     self.metadata.append({
                         "id": rawdata["uuid"],
-                        #"time": rawdata["published"],
+                        # "time": rawdata["published"],
                         "title": rawdata["title"]
-                        #"author": rawdata["author"],
-                        #"url": rawdata["url"]
-                        })
+                        # "author": rawdata["author"],
+                        # "url": rawdata["url"]
+                    })
                     if file_id == maxfile:
                         logging.info(f'Maxfile reached, {file_id} file loaded')
                         return
@@ -52,54 +66,43 @@ class Data(object):
         self.data.append(word_list)
         self._lemma_()
 
-    def _pre_process_(self):
+    def _pre_process_(self, sentence):
         logging.info('Pre-processing files')
-        for file_id in range(len(self.data)):
-            self.data[file_id] = self.data[file_id].lower()
-            # match most of valid email addresses
-            self.data[file_id] =sub('\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b','',self.data[file_id])
-            # match url
-            self.data[file_id] =sub(r'((http|https)\:\/\/)?[a-z0-9\.\/\?\:@\-_=#]+\.([a-z]){2,6}([a-z0-9\.\&\/\?\:@\-_=#])*','',self.data[file_id])
-            # match time
-            self.data[file_id] =sub('[0-9]{1,}:[0-9]{1,}(:[0-9]{2})?(am|pm)?','',self.data[file_id])
-            # match punctuation
-            self.data[file_id] =sub(r'[^\w\s]','',self.data[file_id])
-            # remove digit
-            self.data[file_id] =sub('[0-9]+', '',self.data[file_id])
-            # remove \n when crawled
-            self.data[file_id] =sub('\\n', '',self.data[file_id])
-            # remove multiple space
-            self.data[file_id] =sub(' {2,}', ' ',self.data[file_id])
-            self.data[file_id] = self.data[file_id].strip()
-            self.data[file_id] = self.data[file_id].split()
+        sentence = sentence.lower()
+        # match most of valid email addresses
+        sentence = sub(
+            '\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b', '', sentence)
+        # match url
+        sentence = sub(
+            r'((http|https)\:\/\/)?[a-z0-9\.\/\?\:@\-_=#]+\.([a-z]){2,6}([a-z0-9\.\&\/\?\:@\-_=#])*', '', sentence)
+        # match time
+        sentence = sub('[0-9]{1,}:[0-9]{1,}(:[0-9]{2})?(am|pm)?', '', sentence)
+        # match punctuation
+        sentence = sub(r'[^\w\s]', '', sentence)
+        # remove digit
+        sentence = sub('[0-9]+', '', sentence)
+        # remove \n when crawled
+        sentence = sub('\\n', '', sentence)
+        # remove multiple space
+        sentence = sub(' {2,}', ' ', sentence)
+        sentence = sentence.strip()
+        sentence = sentence.split()
+        return sentence
 
-    def _strip_stop_words_(self):
+    def _strip_stop_words_(self, wordbag):
         logging.info("Stripping stop words")
-        stopword = set(stopwords.words('english'))
-        for file_id in range(len(self.data)):
-            wordlist = []
-            for word in self.data[file_id]:
-                if word not in stopword:
-                    wordlist.append(word)
-            self.data[file_id] = wordlist
+        wordlist = []
+        for word in wordbag:
+            if word not in self.stopword:
+                wordlist.append(word)
+        return wordlist
 
-    def _lemma_(self):
+    # the slowest proceed
+    def _lemma_(self, wordbag):
         logging.info("Lemmatizing words")
-        #this method owe to https://www.machinelearningplus.com/nlp/lemmatization-examples-python/
-        def get_wordnet_pos(word):
-            tag = pos_tag([word])[0][1][0].upper()
-            tag_dict = {"J": wordnet.ADJ,
-                        "N": wordnet.NOUN,
-                        "V": wordnet.VERB,
-                        "R": wordnet.ADV}
-            return tag_dict.get(tag, wordnet.NOUN)
-        for file_id in range(len(self.data)):
-            lemmatizer = WordNetLemmatizer()
-            self.data[file_id] = [lemmatizer.lemmatize(word, get_wordnet_pos(word))
-                for word in self.data[file_id]]
-            if file_id % 200 == 0:
-                logging.debug(f'{file_id} instance(s) lemmatized')
-        logging.info(f'All {file_id+1} instance(s) lemmatized')
+        # this method owe to https://www.machinelearningplus.com/nlp/lemmatization-examples-python/
+        return [self.lemmatizer.lemmatize(
+            word, Data.get_wordnet_pos(word)) for word in wordbag]
 
     def _gen_dict_(self):
         lookup_table = {}
@@ -117,9 +120,22 @@ class Data(object):
                     dict_size += 1
                 word_id_list.append(lookup_table[word])
             self.data[file_id] = word_id_list
+        for file_id in range(len(self.headerdata)):
+            word_id_list = []
+            for word in self.headerdata[file_id]:
+                if word not in self.dict:
+                    self.dict.append(word)
+                    lookup_table[word] = dict_size
+                    dict_size += 1
+                word_id_list.append(lookup_table[word])
+            self.headerdata[file_id] = word_id_list
 
     def process(self):
-        self._pre_process_()
-        self._strip_stop_words_()
-        self._lemma_()
+        for docid in range(len(self.data)):
+            self.data[docid] = self._lemma_(
+                self._strip_stop_words_(
+                    self._pre_process_(self.data[docid])))
+            self.headerdata[docid] = self._lemma_(
+                self._strip_stop_words_(
+                    self._pre_process_(self.headerdata[docid])))
         self._gen_dict_()
