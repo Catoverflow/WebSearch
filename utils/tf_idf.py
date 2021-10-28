@@ -4,7 +4,7 @@
 #          doc1: {wordid1:tf_idf}, {wordid2:tf_idf}, ... , {wordidn:tf_idf}
 from math import log10
 import logging
-from numpy import var, sqrt
+from numpy import var, sqrt, mean
 
 
 class TF_IDF(object):
@@ -52,15 +52,23 @@ class TF_IDF(object):
         for docid in range(len(self.tf_idf)):
             tf_idf_list.extend(
                 [tf_idf for tf_idf in self.tf_idf[docid].values()])
+        # Studentized residual
         std_deviation = sqrt(var(tf_idf_list))
+        mean_value = mean(tf_idf_list)
         for docid in range(len(self.tf_idf)):
-            for wordid in self.tf[docid].keys():
-                self.tf_idf[docid][wordid] /= std_deviation
+           for wordid in self.tf[docid].keys():
+               self.tf_idf[docid][wordid] = (
+                   self.tf_idf[docid][wordid] - mean_value)/std_deviation
+        # min_max scaling
+        # max_value = max(tf_idf_list)
+        # for docid in range(len(self.tf_idf)):
+        #     for wordid in self.tf[docid].keys():
+        #         self.tf_idf[docid][wordid] / max_value
 
     def process(self):
         self.gen_tf()
         self._gen_idf_()
         self._gen_tf_idf_()
-        # self._normalization_()
+        self._normalization_()
         # linear normalization's factor will not effect the cos value of query string
         # thus omitted
