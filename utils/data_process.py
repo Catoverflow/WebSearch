@@ -7,7 +7,7 @@
 #        Data.metadata() get metadata of file
 #                    data format: metadata = [{file1 metadata dict},{file2 metadatadoct},...]
 #        Data.dict() get word bag of all files
-#                    data format: dict = [word1,word2,...]
+#                    data format: dict = [word1, word2, ...]
 #                    use list instead of set is to keep words in order
 from json import load
 from os import walk

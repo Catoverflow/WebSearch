@@ -9,7 +9,7 @@ save_dir = "output"
 logging.basicConfig(level=logging.DEBUG)
 logging.info("Loading data from files")
 data = Data()
-data.load("data",maxfile = 1000)
+data.load("data")
 data.process()
 wordcount = None
 logging.info("Writing data to output")
