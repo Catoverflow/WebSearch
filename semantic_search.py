@@ -92,6 +92,10 @@ def load():
         tf_idf = zstd.decompress(f.read())
         tf_idf = pickle.loads(tf_idf)
         f.close()
+    with open('output/header_tf_idf_matrix.zstd', 'rb') as f:
+        header_tf_idf = zstd.decompress(f.read())
+        header_tf_idf = pickle.loads(header_tf_idf)
+        f.close()
     with open('output/dictionary.zstd', 'rb') as f:
         dictionary = zstd.decompress(f.read())
         dictionary = pickle.loads(dictionary)
@@ -100,15 +104,15 @@ def load():
         metadata = zstd.decompress(f.read())
         metadata = pickle.loads(metadata)
         f.close()
-    return tf_idf, dictionary, metadata
+    return tf_idf, header_tf_idf, dictionary, metadata
 
 
 if __name__ == '__main__':
     # Beware that python API limit data size to 2GB
     # Coz all source files' size = 1.9GB so we can ignore it safely
     logging.info("Loading data from file")
-    tf_idf, dictionary, metadata = load()
-    ss = Semantic_Search(tf_idf, dictionary)
+    tf_idf, header_tf_idf, dictionary, metadata = load()
+    ss = Semantic_Search(tf_idf, header_tf_idf, dictionary)
     print("Ctrl + C to exit")
     while True:
         query = input("Enter words for semantic search: ")
