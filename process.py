@@ -14,7 +14,8 @@ data.process()
 wordcount = None
 logging.info("Writing data to output")
 with open(f'{save_dir}/inverted_index.zstd','wb') as f:
-    ii = Inverted_Index(data.data,data.dict)
+    # include words in title
+    ii = Inverted_Index(data.data,data.headerdata,data.dict)
     ii.procecss()
     wordcount = ii.word_count
     logging.info("Compressing and saving inverted index")
@@ -22,12 +23,16 @@ with open(f'{save_dir}/inverted_index.zstd','wb') as f:
     f.write(zstd.compress(ii_data))
     f.close()
 with open(f'{save_dir}/tf_idf_matrix.zstd','wb') as f:
-    tf_idf = TF_IDF(data.data,data.dict,wordcount)
+    tf_idf = TF_IDF(data.data,data.headerdata,data.dict,wordcount)
     tf_idf.process()
     logging.info("Compressing and saving tf-idf matrix")
     tf_idf_data = pickle.dumps(tf_idf.tf_idf)
     f.write(zstd.compress(tf_idf_data))
     f.close()
+    with open(f'{save_dir}/header_tf_idf_matrix.zstd','wb') as f:
+        header_tf_idf_data = pickle.dumps(tf_idf.header_tf_idf)
+        f.write(zstd.compress(header_tf_idf_data))
+        f.close()
 with open(f'{save_dir}/dictionary.zstd','wb') as f:
     logging.info("Compressing and saving dictionary")  
     dict_data = pickle.dumps(data.dict)

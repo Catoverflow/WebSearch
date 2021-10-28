@@ -119,7 +119,7 @@ class Data(object):
                     lookup_table[word] = dict_size
                     dict_size += 1
                 word_id_list.append(lookup_table[word])
-            self.data[file_id] = word_id_list
+            self.data[file_id] = word_id_list 
         for file_id in range(len(self.headerdata)):
             word_id_list = []
             for word in self.headerdata[file_id]:

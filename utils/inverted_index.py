@@ -6,8 +6,10 @@ import logging
 #        inverted_index = [doc1, doc2,...], [doc, ...], ...
 #                           ↑ index = wordid
 class Inverted_Index(object):
-    def __init__(self, data, dictionary):
-        self.data = data
+    def __init__(self, data, headerdata, dictionary):
+        self.data = []
+        for docid in range(len(data)):
+            self.data[docid] = data[docid] + headerdata[docid]
         self.dict = dictionary
         self.inverted_index = [[] for wordid in range(len(self.dict))]
         self.word_count = []
