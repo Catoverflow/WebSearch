@@ -64,10 +64,6 @@ class Data(object):
         logging.info("Dumping input")
         return Data._lemma_(Data._strip_stop_words_(Data._pre_process_(sentence)))
 
-    def lemma_word(self, word_list):
-        self.data.append(word_list)
-        self._lemma_()
-
     @staticmethod
     def _pre_process_(sentence):
         sentence = sentence.lower()
@@ -101,7 +97,7 @@ class Data(object):
 
     # the slowest proceed
     @staticmethod
-    def _lemma_(wordbag):
+    def lemma(wordbag):
         # this method owe to https://www.machinelearningplus.com/nlp/lemmatization-examples-python/
         return [lemmatizer.lemmatize(
             word, Data.get_wordnet_pos(word)) for word in wordbag]
@@ -137,10 +133,10 @@ class Data(object):
         for docid in range(len(self.data)):
             if docid % 1000 == 0:
                 logging.debug(f"{docid} document processed")
-            self.data[docid] = self._lemma_(
+            self.data[docid] = self.lemma(
                 self._strip_stop_words_(
                     self._pre_process_(self.data[docid])))
-            self.headerdata[docid] = self._lemma_(
+            self.headerdata[docid] = self.lemma(
                 self._strip_stop_words_(
                     self._pre_process_(self.headerdata[docid])))
         self._gen_dict_()

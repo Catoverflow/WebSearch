@@ -122,10 +122,8 @@ class Bool_Search(object):
         query = sub(' {2,}', ' ',query)
         query = query.lower()
         query = query.split()
-        data = Data()
-        data.lemma_word(query)
-        return data.data[0]
-
+        query = Data.lemma(query)
+        return query
     # calculate target inverted index by operator
     @staticmethod
     def process(ii_list):
