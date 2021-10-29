@@ -9,36 +9,23 @@ import logging
 
 class Semantic_Search(object):
     # threshold is used to filter out documents which only include less than threshold * words in query
-    def __init__(self, tf_idf_table, header_tf_idf_table, look_up_dict):
+    def __init__(self, tf_idf_table, header_tf_idf_table, dictionary):
         self.ths = 0.5
         self.res = 10
         self.tf_idf = tf_idf_table
         self.header_tf_idf = header_tf_idf_table
         # dict constructed from database
-        self.lookup = {}
-        for wordid in range(len(look_up_dict)):
-            self.lookup[look_up_dict[wordid]] = wordid
-        # dict constructed from query
-        self.dict = []
-
-    # convert wordid in query to id in database
-    def _convert_(self, word):
-        if word not in self.lookup.keys():
-            return -1
-        else:
-            return self.lookup[word]
+        self.dict = dictionary
 
     def _gen_tf_(self, query):
         query = Data.dump(query)
-        tf = TF_IDF([query], None, None, None)
+        query_list = []
+        for word in query:
+            if word in self.dict:
+                query_list.append(self.dict[word])
+        tf = TF_IDF([query_list], None, None, None)
         tf.gen_tf()
-        query_tf = {}
-        for word in tf.tf[0].keys():
-            # ignore those words which are not in database
-            if self._convert_(word) >= 0:
-                query_tf[self._convert_(word)] = tf.tf[0][word]
-        self.dict = list(set(query))
-        return query_tf
+        return tf.tf[0]
 
     # add tf-idf length into calculation
     def search(self, query, threshold=0.5, return_results=10, len_weight=0.5, header_weight=0.3):
@@ -114,7 +101,10 @@ if __name__ == '__main__':
     while True:
         query = input("Enter words for semantic search: ")
         res = ss.search(query, 0.5, 10, 0.6)
-        for docid in range(len(res)):
-            if(res[docid][0] > 0):
-                print('{}:\t{}'.format(res[docid][0],
-                                       metadata[res[docid][1]]['title']))
+        if res[0][0] == 0:
+            print('Not found')
+        else:
+            for docid in range(len(res)):
+                if(res[docid][0] > 0):
+                    print('{}:\t{}'.format(res[docid][0],
+                                           metadata[res[docid][1]]['title']))

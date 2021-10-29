@@ -49,26 +49,33 @@ class TF_IDF(object):
             self.header_tf.append(freq)
 
     # idf_smooth
-    def _gen_idf_(self):
+    def gen_idf(self):
+        maxid = max([self.dict[word] for word in self.dict]) + 1
         logging.info("Generating idf table")
         self.idf = [log10(len(self.data)/(1+self.count[wordid])) +
-                    1 for wordid in range(len(self.dict))]
+                    1 for wordid in range(maxid)]
         self.header_idf = [log10(len(self.headerdata)/(1+self.count[wordid])) +
-                           1 for wordid in range(len(self.dict))]
+                           1 for wordid in range(maxid)]
 
-    def _gen_tf_idf_(self):
+    def gen_tf_idf(self):
         logging.info("Generating tf-idf table")
         for docid in range(len(self.data)):
             dic = {}
             header_dic = {}
             for wordid in self.tf[docid].keys():
                 dic.update({wordid: self.idf[wordid]*self.tf[docid][wordid]})
-                header_dic.update(
-                    {wordid: self.header_idf[wordid]*self.tf[docid][wordid]})
+            for wordid in self.header_tf[docid].keys():
+                try:
+                    header_dic.update(
+                        {wordid: self.header_idf[wordid]*self.header_tf[docid][wordid]})
+                except:
+                    print('ERROR')
+                    print(wordid)
+                    input()
             self.tf_idf.append(dic)
             self.header_tf_idf.append(header_dic)
 
-    def _normalization_(self):
+    def normalization(self):
         logging.info("Normanizing tf-idf")
         tf_idf_list = []
         header_tf_idf_list = []
@@ -86,6 +93,7 @@ class TF_IDF(object):
             for wordid in self.tf[docid].keys():
                 self.tf_idf[docid][wordid] = (
                     self.tf_idf[docid][wordid] - mean_value)/std_deviation
+            for wordid in self.header_tf[docid].keys():
                 self.header_tf_idf[docid][wordid] = (
                     self.header_tf_idf[docid][wordid] - header_mean_value)/header_std_deviation
 
@@ -97,8 +105,8 @@ class TF_IDF(object):
 
     def process(self):
         self.gen_tf()
-        self._gen_idf_()
-        self._gen_tf_idf_()
-        self._normalization_()
+        self.gen_idf()
+        self.gen_tf_idf()
+        self.normalization()
         # linear normalization's factor will not effect the cos value of query string
         # thus omitted

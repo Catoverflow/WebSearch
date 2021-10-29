@@ -7,9 +7,12 @@ __pycache__/
 *.so
 .vscode/
 .idea/
-nltk_data
+nltk_data/
 #raw data this lesson provide
 data/
+#test tools
+test.py
+dataset/
 #processed data by process.py
 output/
 # Distribution / packaging
