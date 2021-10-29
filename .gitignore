@@ -10,6 +10,8 @@ __pycache__/
 nltk_data
 #raw data this lesson provide
 data/
+#processed data by process.py
+output/
 # Distribution / packaging
 .Python
 build/
