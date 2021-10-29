@@ -4,6 +4,7 @@ from math import sqrt
 from bool_search import Bool_Search
 from utils.data_process import Data
 from utils.tf_idf import TF_IDF
+from utils.img import show_image
 import logging
 
 
@@ -106,5 +107,11 @@ if __name__ == '__main__':
         else:
             for docid in range(len(res)):
                 if(res[docid][0] > 0):
-                    print('{}:\t{}'.format(res[docid][0],
-                                           metadata[res[docid][1]]['title']))
+                    imgurl = metadata[res[docid][1]]['img']
+                    title = metadata[res[docid][1]]['title']
+                    print('{}:\t{}'.format(res[docid][0],title),end='\t')
+                    if len(imgurl) > 0:
+                        print('Found image')
+                        show_image(imgurl,title)
+                    else:
+                        print('Image not found')

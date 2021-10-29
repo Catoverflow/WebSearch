@@ -1,3 +1,4 @@
 nltk
-gensim
 zstd
+pillow
+requests
