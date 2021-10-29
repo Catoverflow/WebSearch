@@ -9,7 +9,7 @@ class Inverted_Index(object):
     def __init__(self, data, headerdata, dictionary):
         self.data = []
         for docid in range(len(data)):
-            self.data[docid] = data[docid] + headerdata[docid]
+            self.data.append(data[docid] + headerdata[docid])
         self.dict = dictionary
         self.inverted_index = [[] for wordid in range(len(self.dict))]
         self.word_count = []

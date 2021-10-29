@@ -18,14 +18,15 @@ from nltk.corpus import wordnet, stopwords
 from nltk import pos_tag
 
 
+stopword = set(stopwords.words('english'))
+lemmatizer = WordNetLemmatizer()
+
 class Data(object):
     def __init__(self):
         self.data = []
         self.headerdata = []
         self.metadata = []
         self.dict = []
-        self.stopword = set(stopwords.words('english'))
-        self.lemmatizer = WordNetLemmatizer()
 
     def get_wordnet_pos(word):
         tag = pos_tag([word])[0][1][0].upper()
@@ -58,16 +59,17 @@ class Data(object):
                         return
         logging.info(f'All {file_id} file loaded')
 
-    def dump(self, sentence):
+    @staticmethod
+    def dump(sentence):
         logging.info("Dumping input")
-        self.data.append(sentence)
+        return Data._lemma_(Data._strip_stop_words_(Data._pre_process_(sentence)))
 
     def lemma_word(self, word_list):
         self.data.append(word_list)
         self._lemma_()
 
-    def _pre_process_(self, sentence):
-        logging.info('Pre-processing files')
+    @staticmethod
+    def _pre_process_(sentence):
         sentence = sentence.lower()
         # match most of valid email addresses
         sentence = sub(
@@ -89,19 +91,19 @@ class Data(object):
         sentence = sentence.split()
         return sentence
 
-    def _strip_stop_words_(self, wordbag):
-        logging.info("Stripping stop words")
+    @staticmethod
+    def _strip_stop_words_(wordbag):
         wordlist = []
         for word in wordbag:
-            if word not in self.stopword:
+            if word not in stopword:
                 wordlist.append(word)
         return wordlist
 
     # the slowest proceed
-    def _lemma_(self, wordbag):
-        logging.info("Lemmatizing words")
+    @staticmethod
+    def _lemma_(wordbag):
         # this method owe to https://www.machinelearningplus.com/nlp/lemmatization-examples-python/
-        return [self.lemmatizer.lemmatize(
+        return [lemmatizer.lemmatize(
             word, Data.get_wordnet_pos(word)) for word in wordbag]
 
     def _gen_dict_(self):
@@ -119,7 +121,7 @@ class Data(object):
                     lookup_table[word] = dict_size
                     dict_size += 1
                 word_id_list.append(lookup_table[word])
-            self.data[file_id] = word_id_list 
+            self.data[file_id] = word_id_list
         for file_id in range(len(self.headerdata)):
             word_id_list = []
             for word in self.headerdata[file_id]:
@@ -131,7 +133,10 @@ class Data(object):
             self.headerdata[file_id] = word_id_list
 
     def process(self):
+        logging.info("Lemmatizing words")
         for docid in range(len(self.data)):
+            if docid % 1000 == 0:
+                logging.debug(f"{docid} document processed")
             self.data[docid] = self._lemma_(
                 self._strip_stop_words_(
                     self._pre_process_(self.data[docid])))

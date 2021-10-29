@@ -14,6 +14,7 @@ class TF_IDF(object):
         self.dict = dictionary
         self.count = word_occur_count
         self.tf = []
+        self.header_tf = []
         self.idf = []
         self.header_idf = []
         self.tf_idf = []
@@ -33,6 +34,19 @@ class TF_IDF(object):
             for wordid in freq.keys():
                 freq[wordid] = log10(1+freq[wordid]/len(self.data[docid]))
             self.tf.append(freq)
+        if self.headerdata == None:
+            return 
+        for docid in range(len(self.headerdata)):
+            freq = {}
+            for wordid in self.headerdata[docid]:
+                if wordid not in freq:
+                    freq[wordid] = 1
+                else:
+                    freq[wordid] += 1
+            for wordid in freq.keys():
+                freq[wordid] = log10(
+                    1+freq[wordid]/len(self.headerdata[docid]))
+            self.header_tf.append(freq)
 
     # idf_smooth
     def _gen_idf_(self):
@@ -49,10 +63,10 @@ class TF_IDF(object):
             header_dic = {}
             for wordid in self.tf[docid].keys():
                 dic.update({wordid: self.idf[wordid]*self.tf[docid][wordid]})
-                header_dic.update({wordid: self.header_idf[wordid]*self.tf[docid][wordid]})
+                header_dic.update(
+                    {wordid: self.header_idf[wordid]*self.tf[docid][wordid]})
             self.tf_idf.append(dic)
             self.header_tf_idf.append(header_dic)
-
 
     def _normalization_(self):
         logging.info("Normanizing tf-idf")

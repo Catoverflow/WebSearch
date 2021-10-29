@@ -22,25 +22,22 @@ class Semantic_Search(object):
         self.dict = []
 
     # convert wordid in query to id in database
-    def _convert_(self, wordid):
-        if self.dict[wordid] not in self.lookup.keys():
+    def _convert_(self, word):
+        if word not in self.lookup.keys():
             return -1
         else:
-            return self.lookup[self.dict[wordid]]
+            return self.lookup[word]
 
     def _gen_tf_(self, query):
-        data = Data()
-        self.dict = data.dict
-        query = data.dump(query)
-        data.process()
-        tf = TF_IDF(data.data, data.dict, None)
+        query = Data.dump(query)
+        tf = TF_IDF([query], None, None, None)
         tf.gen_tf()
         query_tf = {}
-        for wordid in tf.tf[0].keys():
+        for word in tf.tf[0].keys():
             # ignore those words which are not in database
-            if self._convert_(wordid) >= 0:
-                query_tf[self._convert_(wordid)] = tf.tf[0][wordid]
-        self.dict = data.dict
+            if self._convert_(word) >= 0:
+                query_tf[self._convert_(word)] = tf.tf[0][word]
+        self.dict = list(set(query))
         return query_tf
 
     # add tf-idf length into calculation
@@ -118,5 +115,6 @@ if __name__ == '__main__':
         query = input("Enter words for semantic search: ")
         res = ss.search(query, 0.5, 10, 0.6)
         for docid in range(len(res)):
-            print('{}:\t{}'.format(res[docid][0],
-                  metadata[res[docid][1]]['title']))
+            if(res[docid][0] > 0):
+                print('{}:\t{}'.format(res[docid][0],
+                                       metadata[res[docid][1]]['title']))
