@@ -1,4 +1,5 @@
 import logging
+from os import EX_CANTCREAT
 import re
 from utils.data_process import Data
 from re import L, sub
@@ -166,7 +167,10 @@ if __name__ == '__main__':
     print("Ctrl + C to exit")
     while True:
         query = input("Enter expression for bool search: ")
-        res = bs.search(query)
+        try:
+            res = bs.search(query)
+        except:
+            continue
         if res != None:
             for docid in range(len(res)):
                 print('{}\t{}'.format(docid+1, metadata[res[docid]]['title']))
