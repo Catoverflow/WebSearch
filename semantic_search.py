@@ -6,7 +6,7 @@ from utils.data_process import Data
 from utils.tf_idf import TF_IDF
 from utils.img import show_image
 import logging
-
+import requests
 
 class Semantic_Search(object):
     # threshold is used to filter out documents which only include less than threshold * words in query
@@ -109,14 +109,15 @@ if __name__ == '__main__':
                 if(res[docid][0] > 0):
                     imgurl = metadata[res[docid][1]]['img']
                     title = metadata[res[docid][1]]['title']
-                    print('{}:\t{}'.format(res[docid][0],title),end='\t')
+                    uid = metadata[res[docid][1]]['id']
+                    print('{}:\t{}\t{}'.format(res[docid][0],title,uid),end='\t')
                     if len(imgurl) > 0:
                         print('Found image')
                         try:
                             ret = show_image(imgurl,title)
                             if ret == False:
                                 logging.error('No suitable image viewer found')
-                        except:
-                            logging.error('Image loading failed')
+                        except requests.exceptions.RequestException as e:
+                            logging.error('Image loading timeout')
                     else:
                         print('Image not found')

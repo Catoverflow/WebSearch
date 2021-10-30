@@ -16,7 +16,7 @@ import logging
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import wordnet, stopwords
 from nltk import pos_tag
-
+import multiprocessing as mp
 
 stopword = set(stopwords.words('english'))
 lemmatizer = WordNetLemmatizer()
@@ -143,16 +143,42 @@ class Data(object):
                 synonym = line.split('\t')[1].split(', ')[0]
                 self.syn_table[word] = synonym
 
-    def process(self):
+    def process(self, cores=12):
         logging.info("Lemmatizing words")
-        for docid in range(len(self.data)):
-            if docid % 1000 == 0:
-                logging.debug(f"{docid} document processed")
-            self.data[docid] = self.lemma(
-                self.strip_stop_words(
-                    self.pre_process(self.data[docid])))
-            self.headerdata[docid] = self.lemma(
-                self.strip_stop_words(
-                    self.pre_process(self.headerdata[docid])))
+        logging.info("Preparing for multi-process")
+        slicelen = len(self.data)//cores
+        tail = self.data[slicelen*cores:]
+        self.data = [
+            self.data[slicelen*i:slicelen*(i+1)] for i in range(cores)]
+        self.data[-1].extend(tail)
+        tail = self.headerdata[slicelen*cores:]
+        self.headerdata = [self.headerdata[slicelen *
+                                           i:slicelen*(i+1)] for i in range(cores)]
+        self.headerdata[-1].extend(tail)
+        self.data = multi_process(self.data,cores,slicelen)
+        self.headerdata = multi_process(self.headerdata,cores,slicelen)
         self.parse_syn()
         self.gen_dict()
+
+def multi_process(data, cores, slicelen):
+    manager = mp.Manager()
+    manager_dict = manager.dict()
+    manager_lock = manager.Lock()
+    pool = mp.Pool(cores)
+    res = [pool.apply_async(process, args=(
+            data[i], i, manager_dict, manager_lock, slicelen*i)) for i in range(cores)]
+    data = []
+    res = [thr.get() for thr in res]
+    for i in range(cores):
+        data.extend(manager_dict[i])
+    return data
+
+def process(data, index, mdict, mlock, start):
+    for docid in range(len(data)):
+        if docid % 1000 == 0:
+            logging.debug(f"{start+docid} document being processed")
+        data[docid] = Data.lemma(
+            Data.strip_stop_words(
+                Data.pre_process(data[docid])))
+    with mlock:
+        mdict[index] = data
