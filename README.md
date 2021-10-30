@@ -2,7 +2,7 @@
 
 Chinese Report for this experiment is [report.md](./report.md). Original news data crawled is ~1.9G, and will not be provided here. While you can download the [processed data](https://drive.google.com/file/d/1Snm6uNhU4FYfE4flS0hBDkuIjeR7Q4jO/view?usp=sharing).
 
-To use this search engine, you need to extract `output.zip` to `./output` folder, and just run `bool_search.py` or `semantic_search.py`
+To use this search engine, you need to extract `output.zip` to `./output` folder, and just run `bool_search.py` or `semantic_search.py`, `process.py` is used for process raw data and generated output only.
 
 ## Dependencies
 
