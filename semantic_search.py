@@ -70,22 +70,22 @@ class Semantic_Search(object):
         # try numpy's dot
 
 
-def load():
+def load(path = 'output'):
     import zstd
     import pickle
-    with open('output/tf_idf_matrix.zstd', 'rb') as f:
+    with open(f'{path}/tf_idf_matrix.zstd', 'rb') as f:
         tf_idf = zstd.decompress(f.read())
         tf_idf = pickle.loads(tf_idf)
         f.close()
-    with open('output/header_tf_idf_matrix.zstd', 'rb') as f:
+    with open(f'{path}/header_tf_idf_matrix.zstd', 'rb') as f:
         header_tf_idf = zstd.decompress(f.read())
         header_tf_idf = pickle.loads(header_tf_idf)
         f.close()
-    with open('output/dictionary.zstd', 'rb') as f:
+    with open(f'{path}/dictionary.zstd', 'rb') as f:
         dictionary = zstd.decompress(f.read())
         dictionary = pickle.loads(dictionary)
         f.close()
-    with open('output/metadata.zstd', 'rb') as f:
+    with open(f'{path}/metadata.zstd', 'rb') as f:
         metadata = zstd.decompress(f.read())
         metadata = pickle.loads(metadata)
         f.close()

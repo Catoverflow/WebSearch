@@ -139,18 +139,18 @@ class Bool_Search(object):
         return ii_list[0]
 
 
-def load():
+def load(path = 'output'):
     import zstd
     import pickle
-    with open('output/inverted_index.zstd', 'rb') as f:
+    with open(f'{path}/inverted_index.zstd', 'rb') as f:
         ii = zstd.decompress(f.read())
         ii = pickle.loads(ii)
         f.close()
-    with open('output/dictionary.zstd', 'rb') as f:
+    with open(f'{path}/dictionary.zstd', 'rb') as f:
         dictionary = zstd.decompress(f.read())
         dictionary = pickle.loads(dictionary)
         f.close()
-    with open('output/metadata.zstd', 'rb') as f:
+    with open(f'{path}/metadata.zstd', 'rb') as f:
         metadata = zstd.decompress(f.read())
         metadata = pickle.loads(metadata)
         f.close()
