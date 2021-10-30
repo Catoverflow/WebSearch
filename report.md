@@ -148,14 +148,14 @@ TF-IDF 矩阵由于是非常稀疏的矩阵，采用修改的三元组方式存�
 
 序列化数据结构采用了现有的 pickle 库，省去了现场造轮子的工作量。不过 pickle 库存在安全问题，由于在本次实验中不会带来影响所以仍然采用。
 
-压缩算法会带来压缩/解压的时间开销。由于本次实验在生成数据时的开销不影响搜索体验，仅需关注解压的时间开销即可。为了最小化解压时间开销，本实验使用了工业界的高速解压算法 zstd，相关的 benchmark 可在[主页](http://facebook.github.io/zstd/)上找到，解压速度相较同类算法有较大提升，在搜索时也确实大幅降低了延迟。
+压缩算法会带来压缩/解压的时间开销。由于本次实验在生成数据时的开销不影响搜索体验，仅需关注解压的时间开销即可。为了最小化解压时间开销，本实验使用了工业界的高速解压算法 zstd，相关的 benchmark 可在[主页](https://facebook.github.io/zstd/)上找到，解压速度相较同类算法有较大提升，在搜索时也确实大幅降低了延迟。
 
 ##### 近义词合并
 
 > 本部分对应数据 `dataset/english_synonyms_and_antonyms.csv`
 > 对应代码 `utils/data_process.py`
 
-在 bool 检索中加入近义词合并可以提升搜索准确率。本实验采用了[预标记近义词表](*github.com/SuzanaK/english_synonyms_antonyms_list*)，在数据处理时就合并近义词，使其指向同一个独立单词 id（映射关系存储在 `output/dictionary` 下）。在提高搜索准确率的同时也带来了略微的存储空间优化。
+在 bool 检索中加入近义词合并可以提升搜索准确率。本实验采用了[预标记近义词表](https://github.com/SuzanaK/english_synonyms_antonyms_list)，在数据处理时就合并近义词，使其指向同一个独立单词 id（映射关系存储在 `output/dictionary` 下）。在提高搜索准确率的同时也带来了略微的存储空间优化。
 
 __word2vec__
 
