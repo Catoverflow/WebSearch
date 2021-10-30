@@ -112,6 +112,11 @@ if __name__ == '__main__':
                     print('{}:\t{}'.format(res[docid][0],title),end='\t')
                     if len(imgurl) > 0:
                         print('Found image')
-                        show_image(imgurl,title)
+                        try:
+                            ret = show_image(imgurl,title)
+                            if ret == False:
+                                logging.error('No suitable image viewer found')
+                        except:
+                            logging.error('Image loading failed')
                     else:
                         print('Image not found')

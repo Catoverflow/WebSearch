@@ -11,14 +11,17 @@ class Inverted_Index(object):
         for docid in range(len(data)):
             self.data.append(data[docid] + headerdata[docid])
         self.dict = dictionary
-        self.inverted_index = [[] for wordid in range(len(self.dict))]
+        self.maxid = max([self.dict[word] for word in self.dict]) + 1
+        self.inverted_index = [[] for i in range(self.maxid)]
         self.word_count = []
         # lookup table for word and id
 
     def procecss(self):
-        logging.info("Start generating inverted-index")
+        logging.info("Generating inverted-index")
         for docid in range(len(self.data)):
+            if docid %1000 == 0:
+                logging.debug(f"Inverted index generated for {docid} document")
             for wordid in self.data[docid]:
-                if docid not in self.inverted_index[wordid]:
+                if len(self.inverted_index[wordid]) == 0 or self.inverted_index[wordid][-1] != docid:
                     self.inverted_index[wordid].append(docid)
-        self.word_count = [len(self.inverted_index[wordid]) for wordid in range(len(self.dict))]
+        self.word_count = [len(self.inverted_index[wordid]) for wordid in range(self.maxid)]

@@ -25,6 +25,8 @@ class TF_IDF(object):
         logging.info("Generating tf table")
 
         for docid in range(len(self.data)):
+            if docid % 1000 == 0:
+                logging.debug(f"TF for {docid} document generated")
             freq = {}
             for wordid in self.data[docid]:
                 if wordid not in freq:
@@ -35,7 +37,7 @@ class TF_IDF(object):
                 freq[wordid] = log10(1+freq[wordid]/len(self.data[docid]))
             self.tf.append(freq)
         if self.headerdata == None:
-            return 
+            return
         for docid in range(len(self.headerdata)):
             freq = {}
             for wordid in self.headerdata[docid]:
@@ -52,26 +54,27 @@ class TF_IDF(object):
     def gen_idf(self):
         maxid = max([self.dict[word] for word in self.dict]) + 1
         logging.info("Generating idf table")
-        self.idf = [log10(len(self.data)/(1+self.count[wordid])) +
-                    1 for wordid in range(maxid)]
-        self.header_idf = [log10(len(self.headerdata)/(1+self.count[wordid])) +
-                           1 for wordid in range(maxid)]
+        self.idf = []
+        self.header_idf = []
+        for wordid in range(maxid):
+            if wordid % 1000 == 0:
+                logging.debug(f"IDF for {wordid} word generated")
+            self.idf.append(log10(len(self.data)/(1+self.count[wordid]))+1)
+            self.header_idf.append(
+                log10(len(self.headerdata)/(1+self.count[wordid])) + 1)
 
     def gen_tf_idf(self):
         logging.info("Generating tf-idf table")
         for docid in range(len(self.data)):
+            if docid % 1000 == 0:
+                logging.debug(f"TF-IDF for {docid} document generated")
             dic = {}
             header_dic = {}
             for wordid in self.tf[docid].keys():
                 dic.update({wordid: self.idf[wordid]*self.tf[docid][wordid]})
             for wordid in self.header_tf[docid].keys():
-                try:
-                    header_dic.update(
-                        {wordid: self.header_idf[wordid]*self.header_tf[docid][wordid]})
-                except:
-                    print('ERROR')
-                    print(wordid)
-                    input()
+                header_dic.update(
+                    {wordid: self.header_idf[wordid]*self.header_tf[docid][wordid]})
             self.tf_idf.append(dic)
             self.header_tf_idf.append(header_dic)
 
@@ -80,10 +83,8 @@ class TF_IDF(object):
         tf_idf_list = []
         header_tf_idf_list = []
         for docid in range(len(self.tf_idf)):
-            tf_idf_list.extend(
-                [tf_idf for tf_idf in self.tf_idf[docid].values()])
-            header_tf_idf_list.extend(
-                [tf_idf for tf_idf in self.header_tf_idf[docid].values()])
+            tf_idf_list.extend(list(self.tf_idf[docid].values()))
+            header_tf_idf_list.extend(list(self.header_tf_idf[docid].values()))
         # Studentized residual
         std_deviation = sqrt(var(tf_idf_list))
         header_std_deviation = sqrt(var(header_tf_idf_list))

@@ -3,6 +3,6 @@ from PIL import Image
 from io import BytesIO
 
 def show_image(url,title):
-    raw = get(url)
+    raw = get(url,timeout=5)
     img = Image.open(BytesIO(raw.content))
-    img.show(title=title)
+    return img.show(title=title)
