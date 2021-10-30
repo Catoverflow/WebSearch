@@ -12,7 +12,8 @@ nltk_data/
 data/
 #test tools
 test.py
-dataset/
+dataset/*
+!dataset/english_synonyms_and_antonyms.csv
 #processed data by process.py
 output/
 # Distribution / packaging
