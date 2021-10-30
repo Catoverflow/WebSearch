@@ -19,3 +19,7 @@ To use this search engine, you need to extract `output.zip` to `./output` folder
 - Download pre-processed data(stated above)
 
 You can adjust some parameters in source code to get better searching experience.
+
+## Credits
+
+Thanks to [SuzanaK](https://github.com/SuzanaK) for synonyms list (licensed under [BY-SA 3.0](http://creativecommons.org/licenses/by-sa/3.0/)), and all open source tools used in this project.
