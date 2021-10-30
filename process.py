@@ -9,8 +9,8 @@ save_dir = "output"
 logging.basicConfig(level=logging.DEBUG)
 logging.info("Loading data from files")
 data = Data()
-data.load("data")
-data.process(12)
+data.load("data",1000)
+data.process(6)
 wordcount = None
 logging.info("Writing data to output")
 with open(f'{save_dir}/inverted_index.zstd', 'wb') as f:

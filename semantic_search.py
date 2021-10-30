@@ -8,6 +8,7 @@ from utils.img import show_image
 import logging
 import requests
 
+
 class Semantic_Search(object):
     # threshold is used to filter out documents which only include less than threshold * words in query
     def __init__(self, tf_idf_table, header_tf_idf_table, dictionary):
@@ -29,7 +30,7 @@ class Semantic_Search(object):
         return tf.tf[0]
 
     # add tf-idf length into calculation
-    def search(self, query, threshold=0.5, return_results=10, len_weight=0.5, header_weight=0.3):
+    def search(self, query, threshold=0.3, return_results=10, len_weight=0.3, header_weight=0.2):
         self.ths = threshold
         self.res = return_results
         query_tf = self._gen_tf_(query)
@@ -38,8 +39,11 @@ class Semantic_Search(object):
             rescos, reslen = self.calcu(query_tf, self.tf_idf[docid])
             headercos, headerlen = self.calcu(
                 query_tf, self.header_tf_idf[docid])
-            res = header_weight*(len_weight*headerlen+(1-len_weight)*headercos) + \
-                (1-header_weight)*(len_weight*reslen+(1-len_weight)*rescos)
+            # res = header_weight*(len_weight*headerlen+(1-len_weight)*headercos) + \
+            #    (1-header_weight)*(len_weight*reslen+(1-len_weight)*rescos)
+            res = (1-header_weight)*pow(rescos, 1-len_weight)*pow(reslen, len_weight) + \
+                header_weight*pow(headercos, 1-len_weight) * \
+                pow(headerlen, len_weight)
             if res > best_rank[-1][0]:
                 # calculate relavance
                 best_rank[-1] = (res, docid)
@@ -70,7 +74,7 @@ class Semantic_Search(object):
         # try numpy's dot
 
 
-def load(path = 'output'):
+def load(path='output'):
     import zstd
     import pickle
     with open(f'{path}/tf_idf_matrix.zstd', 'rb') as f:
@@ -101,7 +105,10 @@ if __name__ == '__main__':
     print("Ctrl + C to exit")
     while True:
         query = input("Enter words for semantic search: ")
-        res = ss.search(query, 0.5, 10, 0.6)
+        try:
+            res = ss.search(query, 0.5, 10, 0.6)
+        except:
+            continue
         if res[0][0] == 0:
             print('Not found')
         else:
@@ -110,11 +117,12 @@ if __name__ == '__main__':
                     imgurl = metadata[res[docid][1]]['img']
                     title = metadata[res[docid][1]]['title']
                     uid = metadata[res[docid][1]]['id']
-                    print('{}:\t{}\t{}'.format(res[docid][0],title,uid),end='\t')
+                    print('{}:\t{}\t{}'.format(
+                        res[docid][0], title, uid), end='\t')
                     if len(imgurl) > 0:
                         print('Found image')
                         try:
-                            ret = show_image(imgurl,title)
+                            ret = show_image(imgurl, title)
                             if ret == False:
                                 logging.error('No suitable image viewer found')
                         except requests.exceptions.RequestException as e:
