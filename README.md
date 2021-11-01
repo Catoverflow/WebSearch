@@ -4,6 +4,8 @@ Chinese Report for this experiment is [report.md](./report.md). Original news da
 
 To use this search engine, you need to extract `output.zip` to `./output` folder, and just run `bool_search.py` or `semantic_search.py`, `process.py` is used for process raw data and generated output only.
 
+> Note: The code quality is broken including but not limited to ill-formed class methods, mixed OPP and OOP codes, etc. Please issue pull requests if you want to make it better, the authors are just too busy or lazy to fix these.
+
 ## Dependencies
 
 - Install pip dependencies
