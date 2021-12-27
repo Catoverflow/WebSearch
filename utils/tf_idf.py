@@ -34,7 +34,7 @@ class TF_IDF(object):
                 else:
                     freq[wordid] += 1
             for wordid in freq.keys():
-                freq[wordid] = log10(1+freq[wordid]/len(self.data[docid]))
+                freq[wordid] = log10(1+freq[wordid])
             self.tf.append(freq)
         if self.headerdata == None:
             return
@@ -46,8 +46,7 @@ class TF_IDF(object):
                 else:
                     freq[wordid] += 1
             for wordid in freq.keys():
-                freq[wordid] = log10(
-                    1+freq[wordid]/len(self.headerdata[docid]))
+                freq[wordid] = log10(1+freq[wordid])
             self.header_tf.append(freq)
 
     # idf_smooth
